@@ -1,7 +1,7 @@
 ---
 title: "About Me"
 about:
-  template: Solana
+  template: solana
   image: profile.jpeg
   links:
     - icon: linkedin

@@ -5,7 +5,7 @@ project:
 website:
   title: "Academic Portfolio"
   sidebar:
-    logo: images/ColgateSeal.png
+    logo: images/ColgateSeal.jpg
     style: "docked"
     collapse-level: 1
     search: false

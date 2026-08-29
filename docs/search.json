@@ -1,0 +1,52 @@
+[
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About Me",
+    "section": "",
+    "text": "Finley Malloc is the Chief Data Scientist at Wengo Analytics. When not innovating on data platforms, Finley enjoys spending time unicycling and playing with her pet iguana.",
+    "crumbs": [
+      " About"
+    ]
+  },
+  {
+    "objectID": "about.html#education",
+    "href": "about.html#education",
+    "title": "About Me",
+    "section": "Education",
+    "text": "Education\nI am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.",
+    "crumbs": [
+      " About"
+    ]
+  },
+  {
+    "objectID": "about.html#technical-skills",
+    "href": "about.html#technical-skills",
+    "title": "About Me",
+    "section": "Technical Skills",
+    "text": "Technical Skills\n\nLanguages: R, Python, Java, C\nTools: Positron, Quarto, Git/GitHub, LaTeX",
+    "crumbs": [
+      " About"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
+    "objectID": "index.html#welcome",
+    "href": "index.html#welcome",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  }
+]
