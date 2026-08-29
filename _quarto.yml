@@ -21,7 +21,9 @@ website:
         contents:
         - text: "Lab 1"
           href: Math240/lab-2-using-libraries-and-objects-in-r-rsernick/Lab2.pdf
-
+  page-footer: 
+    left: "© 2026 Colgate University Student Portfolio"
+    right: "[GitHub Source](https://github.com/rsernick)"
 format:
   html:
     theme:
