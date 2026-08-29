@@ -1,5 +1,26 @@
 ---
-title: "About"
+title: "About Me"
+about:
+  template: Solana
+  image: profile.jpeg
+  links:
+    - icon: linkedin
+      text: Linkedin
+      href: https://www.linkedin.com/in/reagan-sernick/
+    - icon: github
+      text: Github
+      href: https://github.com/rsernick
+    - icon: envelope
+      text: Email
+      href: rsernick@colgate.edu
 ---
 
-About this site
+Finley Malloc is the Chief Data Scientist at Wengo Analytics. When not innovating on data platforms, Finley enjoys spending time unicycling and playing with her pet iguana.
+
+## Education
+
+I am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.
+
+## Technical Skills
+* **Languages:** R, Python, Java, C
+* **Tools:** Positron, Quarto, Git/GitHub, LaTeX

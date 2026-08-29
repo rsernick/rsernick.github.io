@@ -1,13 +1,26 @@
 project:
   type: website
+  output-dir: docs
 
 website:
-  title: "Quarto Website"
-  navbar:
-    left:
+  title: "Academic Portfolio"
+  sidebar:
+    logo: images/ColgateSeal.png
+    style: "docked"
+    collapse-level: 1
+    search: false
+    contents:
       - href: index.qmd
-        text: Home
-      - about.qmd
+        text: " Home"
+        icon: house
+      - href: about.qmd
+        text: " About"
+        icon: person
+    # Math 240
+      - section: "Computational Statistics"
+        contents:
+        - text: "Lab 1"
+          href: Math240/lab-2-using-libraries-and-objects-in-r-rsernick/Lab2.pdf
 
 format:
   html:
