@@ -20,7 +20,6 @@ website:
       - section: "Computational Statistics"
         contents:
         - text: "Lab 1"
-          href: Math240/lab2/Lab2.qmd
   page-footer: 
     left: "© 2026 Colgate University Student Portfolio"
     right: "[GitHub Source](https://github.com/rsernick)"
