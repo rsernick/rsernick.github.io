@@ -1,7 +1,7 @@
 ---
 title: "About Me"
 about:
-  template: jolla
+  template: solana
   image: images/profile.jpeg
   links:
     - icon: linkedin
@@ -14,8 +14,6 @@ about:
       text: Email
       href: rsernick@colgate.edu
 ---
-
-Finley Malloc is the Chief Data Scientist at Wengo Analytics. When not innovating on data platforms, Finley enjoys spending time unicycling and playing with her pet iguana.
 
 ## Education
 

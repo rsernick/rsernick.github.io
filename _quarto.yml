@@ -20,7 +20,9 @@ website:
     # Math 240
       - section: "Computational Statistics"
         contents:
-        - text: "Lab 1"
+        - text: "Lab 2: Objects in R"
+          href: Math240/Lab2/Lab2.qmd
+
   page-footer: 
     left: "© 2026 Colgate University Student Portfolio"
     right: "[GitHub Source](https://github.com/rsernick)"
