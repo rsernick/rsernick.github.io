@@ -22,6 +22,22 @@ website:
         contents:
         - text: "Lab 2: Objects in R"
           href: Math240/Lab2/Lab2.qmd
+        - text: "Lab 3: Objects in R 2"
+          href: Math240/Lab3/Lab3.qmd
+        - text: "Lab 5: Data Wrangling"
+          href: Math240/Lab5/Lab5.qmd
+        - text: "Lab 6: Graphs in R"
+          href: Math240/Lab6/Lab6.qmd
+        - text: "Lab 7: Data Distributions"
+          href: Math240/Lab7/Lab7.qmd
+        - text: "Lab 10: Point Estimation"
+          href: Math240/Lab10/Lab10.qmd
+        - text: "Lab 11: t-based Inference"
+          href: Math240/Lab11/Lab11.qmd
+      #MATH354
+        #- section: "Data Analysis I"
+        #  contents:
+
 
   page-footer: 
     left: "© 2026 Colgate University Student Portfolio"

@@ -1,0 +1,4 @@
+---
+title: "Lab 7: Data Distributions"
+---
+![](Lab7.pdf){width=100% height=600px}

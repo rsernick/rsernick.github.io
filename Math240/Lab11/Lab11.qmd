@@ -1,0 +1,4 @@
+---
+title: "Lab 11: t-based Inference"
+---
+![](Lab11.pdf){width=100% height=600px}

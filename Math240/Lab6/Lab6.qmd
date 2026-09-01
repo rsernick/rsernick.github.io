@@ -1,0 +1,4 @@
+---
+title: "Lab 6: Graphs in R"
+---
+![](Lab6.pdf){width=100% height=600px}
