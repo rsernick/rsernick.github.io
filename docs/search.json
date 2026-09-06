@@ -1,5 +1,55 @@
 [
   {
+    "objectID": "ai.html",
+    "href": "ai.html",
+    "title": "AI Usage",
+    "section": "",
+    "text": "https://www.rochester.edu/newscenter/artificial-general-intelligence-large-language-models-644892/\n\n\n\nArtificial Intelligence (AI) has become one of the most popular and fastest growing technologies over the past half decade because of its wide range of uses and applications. AI can be an extremely useful tool for many different jobs, however, as it has become more widespread it has been used to replace “Human Intelligence”. In my opinion, generally, generative AI use is acceptable when it is moderate and not used for entire projects and presented as one’s own individual work. Generative AI should only be used as a helping tool to either aid with learning or assist in specific problem solving cases.",
+    "crumbs": [
+      " AI Statement"
+    ]
+  },
+  {
+    "objectID": "ai.html#uses-of-ai",
+    "href": "ai.html#uses-of-ai",
+    "title": "AI Usage",
+    "section": "",
+    "text": "https://www.rochester.edu/newscenter/artificial-general-intelligence-large-language-models-644892/\n\n\n\nArtificial Intelligence (AI) has become one of the most popular and fastest growing technologies over the past half decade because of its wide range of uses and applications. AI can be an extremely useful tool for many different jobs, however, as it has become more widespread it has been used to replace “Human Intelligence”. In my opinion, generally, generative AI use is acceptable when it is moderate and not used for entire projects and presented as one’s own individual work. Generative AI should only be used as a helping tool to either aid with learning or assist in specific problem solving cases.",
+    "crumbs": [
+      " AI Statement"
+    ]
+  },
+  {
+    "objectID": "ai.html#my-ai-use",
+    "href": "ai.html#my-ai-use",
+    "title": "AI Usage",
+    "section": "My AI Use",
+    "text": "My AI Use\nWhen it comes to my school/professional work I rarely use generative AI beyond basic queries. I mainly use Large Language Models (LLM) like ChatGPT as an advanced search engine, for when my questions may be too specific to get an instant answer from Google. For example, when working on a coding project, sometimes I get errors that I have not seen before or are not easily readable, in this case I paste the error message into an LLM to get a detailed description of the error message and the common causes for it.",
+    "crumbs": [
+      " AI Statement"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
+    "objectID": "index.html#welcome",
+    "href": "index.html#welcome",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About Me",
@@ -30,23 +80,13 @@
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Academic Portfolio",
+    "objectID": "ai.html#responsible-ai-use",
+    "href": "ai.html#responsible-ai-use",
+    "title": "AI Usage",
     "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "text": "https://www.rochester.edu/newscenter/artificial-general-intelligence-large-language-models-644892/\n\n\n\nArtificial Intelligence (AI) has become one of the most popular and fastest growing technologies over the past half decade because of its wide range of uses and applications. AI can be an extremely useful tool for many different jobs, however, as it has become more widespread it has been used to replace “Human Intelligence”. In my opinion, generally, generative AI use is acceptable when it is moderate and not used for entire projects and presented as one’s own individual work. Generative AI should only be used as a helping tool to either aid with learning or assist in specific problem solving cases.",
     "crumbs": [
-      " Home"
-    ]
-  },
-  {
-    "objectID": "index.html#welcome",
-    "href": "index.html#welcome",
-    "title": "Academic Portfolio",
-    "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
-    "crumbs": [
-      " Home"
+      " AI Statement"
     ]
   }
 ]

@@ -1,0 +1,17 @@
+---
+title: "AI Usage"
+descritpion: "A disclosure on my use of artificial intelligence in my work"
+page-layout: article
+---
+
+## Responsible AI Use
+::: {.columns}
+::: {.column width="50%"}
+![https://www.rochester.edu/newscenter/artificial-general-intelligence-large-language-models-644892/](images/AI.jpg){width=90% height=280px}
+:::
+:::{.column width="50%"}
+[Artificial Intelligence (AI) has become one of the most popular and fastest growing technologies over the past half decade because of its wide range of uses and applications. AI can be an extremely useful tool for many different jobs, however, as it has become more widespread it has been used to replace "Human Intelligence". In my opinion, generally, generative AI use is acceptable when it is moderate and not used for entire projects and presented as one's own individual work. Generative AI should only be used as a helping tool to either aid with learning or assist in specific problem solving cases.]{style="color: maroon"}
+:::
+:::
+## My AI Use
+When it comes to my school/professional work I rarely use generative AI beyond basic queries. I mainly use Large Language Models (LLM) like ChatGPT as an advanced search engine, for when my questions may be too specific to get an instant answer from Google. For example, when working on a coding project, sometimes I get errors that I have not seen before or are not easily readable, in this case I paste the error message into an LLM to get a detailed description of the error message and the common causes for it.

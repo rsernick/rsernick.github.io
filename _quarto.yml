@@ -17,6 +17,9 @@ website:
       - href: about.qmd
         text: " About"
         icon: person
+      - href: ai.qmd
+        text: " AI Statement"
+        icon: robot
     # Math 240
       - section: "Computational Statistics"
         contents:
