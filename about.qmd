@@ -12,7 +12,7 @@ about:
       href: https://github.com/rsernick
     - icon: envelope
       text: Email
-      href: rsernick@colgate.edu
+      href: mailto:rsernick@colgate.edu
 ---
 
 ## Education
