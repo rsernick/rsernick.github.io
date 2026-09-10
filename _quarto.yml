@@ -38,8 +38,10 @@ website:
         - text: "Lab 11: t-based Inference"
           href: Math240/Lab11/Lab11.qmd
       #MATH354
-        #- section: "Data Analysis I"
-        #  contents:
+      - section: "Data Analysis I"
+        contents:
+          - text: "HW 1: Can Dogs Learn Words by Overhearing"
+            href: Math354/HW1/Hw1.qmd
 
 
   page-footer: 

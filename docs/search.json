@@ -30,26 +30,6 @@
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Academic Portfolio",
-    "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
-    "crumbs": [
-      " Home"
-    ]
-  },
-  {
-    "objectID": "index.html#welcome",
-    "href": "index.html#welcome",
-    "title": "Academic Portfolio",
-    "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
-    "crumbs": [
-      " Home"
-    ]
-  },
-  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About Me",
@@ -77,6 +57,48 @@
     "text": "Technical Skills\n\nLanguages: R, Python, Java, C\nTools: Positron, Quarto, Git/GitHub, LaTeX",
     "crumbs": [
       " About"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
+    "objectID": "index.html#welcome",
+    "href": "index.html#welcome",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
+    "objectID": "Math354/HW1/Hw1.html",
+    "href": "Math354/HW1/Hw1.html",
+    "title": "Can Dogs Learn Words by Overhearing",
+    "section": "",
+    "text": "In this assignment we explore the idea of dogs learning the names of objects by overhearing the object being referenced in outside conversation without being directly taught. Dror et al. (2026) conducted a study where 10 dogs were exposed to a condition where two family members sitting across from each other passing the toy back and forth. The caretaker addressed the second person using simple sentence frames and non-verbal cues, neither directly to the dog.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 1: Can Dogs Learn Words by Overhearing"
+    ]
+  },
+  {
+    "objectID": "Math354/HW1/Hw1.html#wilcoxon-signed-rank-test",
+    "href": "Math354/HW1/Hw1.html#wilcoxon-signed-rank-test",
+    "title": "Can Dogs Learn Words by Overhearing",
+    "section": "Wilcoxon Signed Rank Test",
+    "text": "Wilcoxon Signed Rank Test\nI performed two two-sided Wilcoxon signed rank test with a confidence level of \\(95\\%\\) for the Overhearing data and Difference data. My hypotheses are below.\nOverhearing Data: \\[\nH_0 : \\text{median}(X) = 50\\% \\newline\nH_a : \\text{median}(X) \\neq 50\\%\n\\] Difference Data: \\[\nH_0 : \\text{median}(X) = 0 \\newline\nH_a : \\text{median}(X) \\neq 0\n\\]\n\nTest Results\n\n\n\n\nOverhearing\nDifference\n\n\n\n\nWilcoxon Score\n54.0000000\n21.5000000\n\n\np-value\n0.0074426\n0.6705971\n\n\n\nThe \\(p\\)-value for the Overhearing data is less than \\(0.025\\) so we have evidence to reject the null hypothesis, there is evidence that the dogs did not retrieve the correct toy by chance. The \\(p\\)-value for the Difference data is much greater than \\(0.025\\), however, so we do not reject the null hypothesis, there is not sufficient evidence that the dogs retrieve the toys more or less successfully when learning their names directly or from overhearing.\n\n\n\n\n\nWilcoxon Distribution with Rejection Region and Observed Values\n\n\n\nThis graph shows the Wilcoxon distribution for a sample of size \\(n = 10\\), along with the rejection region for a two-sided test (\\(\\alpha = 0.025\\) on either side). We can see that the Wilcoxon score for the Difference data (\\(W = 21.5\\)) lies near the middle of the distribution so we do not reject the null in this case. However, the Wilcoxon score for the Overhearing data (\\(W = 54.0\\)) lies far in the rejection region so we do reject the null.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 1: Can Dogs Learn Words by Overhearing"
     ]
   }
 ]

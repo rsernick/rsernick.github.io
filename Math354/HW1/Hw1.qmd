@@ -1,0 +1,80 @@
+---
+title: "Can Dogs Learn Words by Overhearing"
+bibliography: references.bib
+page-layout: article
+---
+
+# Introduction
+
+In this assignment we explore the idea of dogs learning the names of objects by overhearing the object being referenced in outside conversation without being directly taught. @dror2026dogs conducted a study where 10 dogs were exposed to a condition where two family members sitting across from each other passing the toy back and forth. The caretaker addressed the second person using simple sentence frames and non-verbal cues, neither directly to the dog. 
+
+# The Experiment
+
+After 12 days of training the dogs they were tested to see if they could retrieve the toys when directed. For each dog the proportion of times they successfully retrieved a toy was recorded.
+
+### Recorded Data
+
+##### Overhearing
+
+|   1 |   2 |    3 |   4 |      5 |      6 |    7 |      8 |      9 |  10 |
+|----:|----:|-----:|----:|-------:|-------:|-----:|-------:|-------:|----:|
+|   1 |   1 | 0.75 |   1 | 0.4167 | 0.8333 | 0.75 | 0.8333 | 0.8333 |   1 |
+
+##### Paired Difference (Direct - Overhearing)
+
+|       1 |   2 |       3 |       4 |      5 |      6 |    7 |      8 |   9 |      10 |
+|--------:|----:|--------:|--------:|-------:|-------:|-----:|-------:|----:|--------:|
+| -0.0833 |   0 | -0.0833 | -0.0833 | 0.5833 | 0.0833 | 0.25 | 0.1667 |   0 | -0.4167 |
+
+### Data Summary
+
+##### Overhearing
+
+|   n |    mean |       sd | median |      IQR |
+|----:|--------:|---------:|-------:|---------:|
+|  10 | 0.84166 | 0.181931 | 0.8333 | 0.229175 |
+
+##### Paired Difference
+
+|   n |    mean |        sd | median |     IQR |
+|----:|--------:|----------:|-------:|--------:|
+|  10 | 0.04167 | 0.2613126 |      0 | 0.22915 |
+
+# Testing
+
+Looking at the data summaries, we can see that on average the dogs were able to retrieve the toys more than 50% of the time (not by chance), and that on average retrieved the toys successfully roughly the same amount of times as learning their names directly. Even though we can say that most of the dogs in the test are able to learn the names of objects from overhearing, is there enough data to make an inference on the greater population?
+
+The possible one-sample tests we can consider are the Wilcoxon signed rank test, t-test, and z-test. Because of the small sample size ($n = 10$), the sample does not meet the normality assumption of any of the tests. Because of the robustness of the Wilcoxon signed rank test, however, I chose to perform this test instead of the others.
+
+## Wilcoxon Signed Rank Test
+
+I performed two two-sided Wilcoxon signed rank test with a confidence level of $95\%$ for the Overhearing data and Difference data. My hypotheses are below.
+
+Overhearing Data:
+$$
+H_0 : \text{median}(X) = 50\% \newline
+H_a : \text{median}(X) \neq 50\% 
+$$
+Difference Data:
+$$
+H_0 : \text{median}(X) = 0 \newline
+H_a : \text{median}(X) \neq 0 
+$$
+
+### Test Results
+
+|                    | Overhearing | Difference |
+|-------------------:|------------:|-----------:|
+| **Wilcoxon Score** |  54.0000000 | 21.5000000 |
+|        **p-value** |   0.0074426 |  0.6705971 |
+
+The $p$-value for the Overhearing data is less than $0.025$ so we have evidence to reject the null hypothesis, there is evidence that the dogs did not retrieve the correct toy by chance. The $p$-value for the Difference data is much greater than $0.025$, however, so we do not reject the null hypothesis, there is not sufficient evidence that the dogs retrieve the toys more or less successfully when learning their names directly or from overhearing.
+
+::: {.columns}
+::: {.column width="75%"}
+![Wilcoxon Distribution with Rejection Region and Observed Values](Plot1.png)
+:::
+::: {.column width="25%"}
+This graph shows the Wilcoxon distribution for a sample of size $n = 10$, along with the rejection region for a two-sided test ($\alpha = 0.025$ on either side). We can see that the Wilcoxon score for the Difference data ($W = 21.5$) lies near the middle of the distribution so we do not reject the null in this case. However, the Wilcoxon score for the Overhearing data ($W = 54.0$) lies far in the rejection region so we do reject the null.
+:::
+:::
