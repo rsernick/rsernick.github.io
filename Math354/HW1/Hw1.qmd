@@ -6,7 +6,7 @@ page-layout: article
 
 # Introduction
 
-In this assignment we explore the idea of dogs learning the names of objects by overhearing the object being referenced in outside conversation without being directly taught. @dror2026dogs conducted a study where 10 dogs were exposed to a condition where two family members sitting across from each other passing the toy back and forth. The caretaker addressed the second person using simple sentence frames and non-verbal cues, neither directly to the dog. 
+In this assignment we explore the idea of dogs learning the names of objects by overhearing the object being referenced in outside conversation without being directly taught. @dror2026dogs conducted a study where 10 dogs were exposed to a condition where two family members sitting across from each other passing the toy back and forth. The caretaker addressed the second person using simple sentence frames and non-verbal cues, neither directly to the dog.
 
 # The Experiment
 
@@ -53,20 +53,20 @@ I performed two two-sided Wilcoxon signed rank test with a confidence level of $
 Overhearing Data:
 $$
 H_0 : \text{median}(X) = 50\% \newline
-H_a : \text{median}(X) \neq 50\% 
+H_a : \text{median}(X) \neq 50\%
 $$
 Difference Data:
 $$
 H_0 : \text{median}(X) = 0 \newline
-H_a : \text{median}(X) \neq 0 
+H_a : \text{median}(X) \neq 0
 $$
 
 ### Test Results
 
 |                    | Overhearing | Difference |
 |-------------------:|------------:|-----------:|
-| **Wilcoxon Score** |  54.0000000 | 21.5000000 |
-|        **p-value** |   0.0074426 |  0.6705971 |
+| Wilcoxon Score     |  54.0000000 | 21.5000000 |
+|   p-value          |   0.0074426 |  0.6705971 |
 
 The $p$-value for the Overhearing data is less than $0.05$ so we have evidence to reject the null hypothesis, there is evidence that the dogs did not retrieve the correct toy by chance. The $p$-value for the Difference data is much greater than $0.05$, however, so we do not reject the null hypothesis, there is not sufficient evidence that the dogs retrieve the toys more or less successfully when learning their names directly or from overhearing.
 
@@ -81,9 +81,9 @@ This graph shows the Wilcoxon distribution for a sample of size $n = 10$, along 
 
 ## Binomial Test
 ### Trials and Conditions
-@dror2026dogs performed two new-toy trials per dog, still $n=10$, and each dog chose the correct toy on the first try for each trial. The researchers assume that the probability that the dog chooses the new toy by chance is $50\%$. 
+@dror2026dogs performed two new-toy trials per dog, still $n=10$, and each dog chose the correct toy on the first try for each trial. The researchers assume that the probability that the dog chooses the new toy by chance is $50\%$.
 
-For us to consider the binomial distribution to represent this data we must meet the $4$ conditions of using the binomial distribution: Binary outcomes, Independent trials, Number of trials fixed, and Same probability of success (BINS). The possible outcomes of the performed trials are either the dog successfully chooses the new toy ($1$) or they do not ($0$), so the binary condition is met. The trials are independent and performed on seperate dogs so the independence condition is met. The number of trials is fixed ($n=10$) and each trial is assumed to have the saem probability of success ($50\%$). Since all conditions are met for the binomial distribution it makes sense to do a binomial test on this data.
+For us to consider the binomial distribution to represent this data we must meet the $4$ conditions of using the binomial distribution: Binary outcomes, Independent trials, Number of trials fixed, and Same probability of success (BINS). The possible outcomes of the performed trials are either the dog successfully chooses the new toy ($1$) or they do not ($0$), so the binary condition is met. The trials are independent and performed on separate dogs so the independence condition is met. The number of trials is fixed ($n=10$) and each trial is assumed to have the same probability of success ($50\%$). Since all conditions are met for the binomial distribution it makes sense to do a binomial test on this data.
 
 ### Exact Binomial Test
 
@@ -109,7 +109,7 @@ After performing the exact binomial test on the data with a confidence level of 
 
 ### Gaussian Approximation of Binomial Distribution
 
-For sufficiently large samples, $n\geq30$, we can use the gaussian approximation of the binomial distribution chaning the parameters to:
+For sufficiently large samples, $n\geq30$, we can use the Gaussian approximation of the binomial distribution changing the parameters to:
 
 $$
 n = 10, p = 0.5 \newline
@@ -118,17 +118,17 @@ $$
 
 :::{.columns}
 :::{.column width="75%"}
-![A graph of the gaussian approximation of the binomial distribution with the observation $x=10$](Plot3.png)
+![A graph of the Gaussian approximation of the binomial distribution with the observation $x=10$](Plot3.png)
 :::
 :::{.column width="25%"}
-The gaussian approximation looks very similar to the excat distribution, but there are slight differences. Because the sample size is small and this model is just an approximation, the rejection region begins at a decimal value, however our data is discrete so I rounded towards the edges of the distribution for the rejection region. Even with this smaller rejection region, however, the result is the same, the observation of $100\%$ successes is in this region.
+The Gaussian approximation looks very similar to the exact distribution, but there are slight differences. Because the sample size is small and this model is just an approximation, the rejection region begins at a decimal value, however our data is discrete so I rounded towards the edges of the distribution for the rejection region. Even with this smaller rejection region, however, the result is the same, the observation of $100\%$ successes is in this region.
 :::
 :::
 
 #### Test Results
 
-Calculating the probability of the researchers' observation using the approximate distribution yielded a $p$-value of $\approx0.00443$. Even though the approximated $p$-value is more then $2\times$ larger than the exact ($\approx0.00195$), the conclusion of the tests are the same: reject the null.
+Calculating the probability of the researchers' observation using the approximate distribution yielded a $p$-value of $\approx0.00443$. Even though the approximated $p$-value is more than $2\times$ larger than the exact ($\approx0.00195$), the conclusion of the tests are the same: reject the null.
 
 ### Inference
 
-In the case of this specific expirement where all trials were successes, I think it is fair to make an inference based on the tests performed due to how low the $p$-values are. Both the exact binomial test and the Gaussian approximation produce $p$-values well below the significance level of $\alpha = 0.05$, providing strong evidence against the null hypothesis that the probability of a successful trial is $p = 0.5$. Therefore, the null hypothesis can be rejected in favor of the conclusion that the probability of success differs from chance. Although the Gaussian approximation produces a larger $p$-value than the exact binomial test, both methods lead to the same statistical conclusion. The difference between the two $p$-values is likely due to the small sample size ($n=10$) and the observed result being at the extreme end of the distribution. For this reason, the exact binomial test provides the more reliable inference for these data.
+In the case of this specific experiment where all trials were successes, I think it is fair to make an inference based on the tests performed due to how low the $p$-values are. Both the exact binomial test and the Gaussian approximation produce $p$-values well below the significance level of $\alpha = 0.05$, providing strong evidence against the null hypothesis that the probability of a successful trial is $p = 0.5$. Therefore, the null hypothesis can be rejected in favor of the conclusion that the probability of success differs from chance. Although the Gaussian approximation produces a larger $p$-value than the exact binomial test, both methods lead to the same statistical conclusion. The difference between the two $p$-values is likely due to the small sample size ($n=10$) and the observed result being at the extreme end of the distribution. For this reason, the exact binomial test provides the more reliable inference for these data.

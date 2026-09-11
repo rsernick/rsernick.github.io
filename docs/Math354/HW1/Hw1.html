@@ -476,12 +476,12 @@ H_a : \text{median}(X) \neq 0
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: right;"><strong>Wilcoxon Score</strong></td>
+<td style="text-align: right;">Wilcoxon Score</td>
 <td style="text-align: right;">54.0000000</td>
 <td style="text-align: right;">21.5000000</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;"><strong>p-value</strong></td>
+<td style="text-align: right;">p-value</td>
 <td style="text-align: right;">0.0074426</td>
 <td style="text-align: right;">0.6705971</td>
 </tr>
@@ -507,7 +507,7 @@ H_a : \text{median}(X) \neq 0
 <section id="trials-and-conditions" class="level3">
 <h3 class="anchored" data-anchor-id="trials-and-conditions">Trials and Conditions</h3>
 <p><span class="citation" data-cites="dror2026dogs">Dror et al. (<a href="#ref-dror2026dogs" role="doc-biblioref">2026</a>)</span> performed two new-toy trials per dog, still <span class="math inline">\(n=10\)</span>, and each dog chose the correct toy on the first try for each trial. The researchers assume that the probability that the dog chooses the new toy by chance is <span class="math inline">\(50\%\)</span>.</p>
-<p>For us to consider the binomial distribution to represent this data we must meet the <span class="math inline">\(4\)</span> conditions of using the binomial distribution: Binary outcomes, Independent trials, Number of trials fixed, and Same probability of success (BINS). The possible outcomes of the performed trials are either the dog successfully chooses the new toy (<span class="math inline">\(1\)</span>) or they do not (<span class="math inline">\(0\)</span>), so the binary condition is met. The trials are independent and performed on seperate dogs so the independence condition is met. The number of trials is fixed (<span class="math inline">\(n=10\)</span>) and each trial is assumed to have the saem probability of success (<span class="math inline">\(50\%\)</span>). Since all conditions are met for the binomial distribution it makes sense to do a binomial test on this data.</p>
+<p>For us to consider the binomial distribution to represent this data we must meet the <span class="math inline">\(4\)</span> conditions of using the binomial distribution: Binary outcomes, Independent trials, Number of trials fixed, and Same probability of success (BINS). The possible outcomes of the performed trials are either the dog successfully chooses the new toy (<span class="math inline">\(1\)</span>) or they do not (<span class="math inline">\(0\)</span>), so the binary condition is met. The trials are independent and performed on separate dogs so the independence condition is met. The number of trials is fixed (<span class="math inline">\(n=10\)</span>) and each trial is assumed to have the same probability of success (<span class="math inline">\(50\%\)</span>). Since all conditions are met for the binomial distribution it makes sense to do a binomial test on this data.</p>
 </section>
 <section id="exact-binomial-test" class="level3">
 <h3 class="anchored" data-anchor-id="exact-binomial-test">Exact Binomial Test</h3>
@@ -535,7 +535,7 @@ H_a: p \neq 50\%
 </section>
 <section id="gaussian-approximation-of-binomial-distribution" class="level3">
 <h3 class="anchored" data-anchor-id="gaussian-approximation-of-binomial-distribution">Gaussian Approximation of Binomial Distribution</h3>
-<p>For sufficiently large samples, <span class="math inline">\(n\geq30\)</span>, we can use the gaussian approximation of the binomial distribution chaning the parameters to:</p>
+<p>For sufficiently large samples, <span class="math inline">\(n\geq30\)</span>, we can use the Gaussian approximation of the binomial distribution changing the parameters to:</p>
 <p><span class="math display">\[
 n = 10, p = 0.5 \newline
 \mu_0 = np, \sigma_0=\sqrt{(np(p-1))}
@@ -545,21 +545,21 @@ n = 10, p = 0.5 \newline
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="Plot3.png" class="img-fluid figure-img"></p>
-<figcaption>A graph of the gaussian approximation of the binomial distribution with the observation <span class="math inline">\(x=10\)</span></figcaption>
+<figcaption>A graph of the Gaussian approximation of the binomial distribution with the observation <span class="math inline">\(x=10\)</span></figcaption>
 </figure>
 </div>
 </div><div class="column" style="width:25%;">
-<p>The gaussian approximation looks very similar to the excat distribution, but there are slight differences. Because the sample size is small and this model is just an approximation, the rejection region begins at a decimal value, however our data is discrete so I rounded towards the edges of the distribution for the rejection region. Even with this smaller rejection region, however, the result is the same, the observation of <span class="math inline">\(100\%\)</span> successes is in this region.</p>
+<p>The Gaussian approximation looks very similar to the exact distribution, but there are slight differences. Because the sample size is small and this model is just an approximation, the rejection region begins at a decimal value, however our data is discrete so I rounded towards the edges of the distribution for the rejection region. Even with this smaller rejection region, however, the result is the same, the observation of <span class="math inline">\(100\%\)</span> successes is in this region.</p>
 </div>
 </div>
 <section id="test-results-2" class="level4">
 <h4 class="anchored" data-anchor-id="test-results-2">Test Results</h4>
-<p>Calculating the probability of the researchers’ observation using the approximate distribution yielded a <span class="math inline">\(p\)</span>-value of <span class="math inline">\(\approx0.00443\)</span>. Even though the approximated <span class="math inline">\(p\)</span>-value is more then <span class="math inline">\(2\times\)</span> larger than the exact (<span class="math inline">\(\approx0.00195\)</span>), the conclusion of the tests are the same: reject the null.</p>
+<p>Calculating the probability of the researchers’ observation using the approximate distribution yielded a <span class="math inline">\(p\)</span>-value of <span class="math inline">\(\approx0.00443\)</span>. Even though the approximated <span class="math inline">\(p\)</span>-value is more than <span class="math inline">\(2\times\)</span> larger than the exact (<span class="math inline">\(\approx0.00195\)</span>), the conclusion of the tests are the same: reject the null.</p>
 </section>
 </section>
 <section id="inference" class="level3">
 <h3 class="anchored" data-anchor-id="inference">Inference</h3>
-<p>In the case of this specific expirement where all trials were successes, I think it is fair to make an inference based on the tests performed due to how low the <span class="math inline">\(p\)</span>-values are. Both the exact binomial test and the Gaussian approximation produce <span class="math inline">\(p\)</span>-values well below the significance level of <span class="math inline">\(\alpha = 0.05\)</span>, providing strong evidence against the null hypothesis that the probability of a successful trial is <span class="math inline">\(p = 0.5\)</span>. Therefore, the null hypothesis can be rejected in favor of the conclusion that the probability of success differs from chance. Although the Gaussian approximation produces a larger <span class="math inline">\(p\)</span>-value than the exact binomial test, both methods lead to the same statistical conclusion. The difference between the two <span class="math inline">\(p\)</span>-values is likely due to the small sample size (<span class="math inline">\(n=10\)</span>) and the observed result being at the extreme end of the distribution. For this reason, the exact binomial test provides the more reliable inference for these data.</p>
+<p>In the case of this specific experiment where all trials were successes, I think it is fair to make an inference based on the tests performed due to how low the <span class="math inline">\(p\)</span>-values are. Both the exact binomial test and the Gaussian approximation produce <span class="math inline">\(p\)</span>-values well below the significance level of <span class="math inline">\(\alpha = 0.05\)</span>, providing strong evidence against the null hypothesis that the probability of a successful trial is <span class="math inline">\(p = 0.5\)</span>. Therefore, the null hypothesis can be rejected in favor of the conclusion that the probability of success differs from chance. Although the Gaussian approximation produces a larger <span class="math inline">\(p\)</span>-value than the exact binomial test, both methods lead to the same statistical conclusion. The difference between the two <span class="math inline">\(p\)</span>-values is likely due to the small sample size (<span class="math inline">\(n=10\)</span>) and the observed result being at the extreme end of the distribution. For this reason, the exact binomial test provides the more reliable inference for these data.</p>
 
 
 
