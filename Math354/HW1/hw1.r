@@ -68,5 +68,64 @@ n = 10
 binom_test = binom.test(x = x, n = n, p = 0.5, alternative = "two.sided", conf.level = 0.95)
 prob = as.numeric(binom_test$p.value)
 
+
+successes = 0:10
+proportion = dbinom(successes, 10, 0.5)
+
+
+binom = tibble(successes, proportion)
+
+lower = qbinom(0.025, 10, 0.5)
+upper = 10 - lower
+
+ggplot(data = binom, aes(x = successes))+
+  geom_hline(yintercept = 0)+
+  geom_col(aes(y = proportion, color = 'Binomial Distribution'), fill = 'grey')+
+  geom_line(aes(y = proportion, color = 'Binomial Distribution'), linewidth = 1)+
+  geom_ribbon(aes(ymin = 0, ymax = ifelse(successes <= lower & successes >= 0, proportion, NA)),
+                  fill = 'red', alpha = 0.3)+
+  geom_ribbon(aes(ymin = 0, ymax = ifelse(successes >= upper & successes <= 10, proportion, NA)),
+                  fill = 'red', alpha = 0.3)+
+  geom_segment(aes(x = lower, xend = lower, y = 0, yend = proportion[lower+1], color = 'Rejection Region'))+
+  geom_segment(aes(x = upper, xend = upper, y = 0, yend = proportion[upper+1], color = 'Rejection Region'))+
+  geom_point(aes(x = 10, y = 0, color = 'Observation'), size = 3)+
+  scale_x_continuous(breaks = seq(0, 10, by = 1))+
+  scale_color_manual(values = c('Binomial Distribution' = 'black', 'Observation' = 'blue', 
+                                'Rejection Region' = 'red'))+
+  labs(x = 'Successes', y = 'Probability')+
+  theme_minimal()
+
+
 ## Question 2c
 
+n = 10
+x = 10
+p = x/n
+p0 = 0.5
+mu0 = n*p0
+sd0 = sqrt(n*p0*(1-p0))
+
+approx = 2*pnorm(x-0.5, mean = mu0, sd = sd0, lower.tail = FALSE)
+gauss.successes = 0:10
+gauss.prob = dnorm(gauss.successes, mean = mu0, sd = sd0)
+gauss.dat = tibble(gauss.successes, gauss.prob)
+
+lower = floor(qnorm(0.025, mu0, sd0))
+upper = n - lower
+
+ggplot(data = gauss.dat, aes(x = gauss.successes, y = gauss.prob))+
+  geom_hline(yintercept = 0)+
+  geom_col(aes(color = 'Gaussian Approximation'), fill = 'grey')+
+  geom_line(aes(color = 'Gaussian Approximation'), linewidth = 1)+
+  geom_ribbon(aes(ymin = 0, ymax = ifelse(gauss.successes <= lower & gauss.successes >= 0, gauss.prob, NA)),
+                  fill = 'red', alpha = 0.3)+
+  geom_ribbon(aes(ymin = 0, ymax = ifelse(gauss.successes >= upper & gauss.successes <= 10, gauss.prob, NA)),
+                  fill = 'red', alpha = 0.3)+
+  geom_segment(aes(x = lower, xend = lower, y = 0, yend = gauss.prob[lower+1], color = 'Rejection Region'))+
+  geom_segment(aes(x = upper, xend = upper, y = 0, yend = gauss.prob[upper+1], color = 'Rejection Region'))+
+  geom_point(aes(x = 10, y = 0, color = 'Observation'), size = 3)+
+  scale_x_continuous(breaks = seq(0, 10, by = 1))+
+  scale_color_manual(values = c('Gaussian Approximation' = 'black', 'Observation' = 'blue', 
+                                'Rejection Region' = 'red'))+
+  labs(x = 'Successes', y = 'Probability')+
+  theme_minimal()

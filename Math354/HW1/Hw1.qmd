@@ -68,13 +68,67 @@ $$
 | **Wilcoxon Score** |  54.0000000 | 21.5000000 |
 |        **p-value** |   0.0074426 |  0.6705971 |
 
-The $p$-value for the Overhearing data is less than $0.025$ so we have evidence to reject the null hypothesis, there is evidence that the dogs did not retrieve the correct toy by chance. The $p$-value for the Difference data is much greater than $0.025$, however, so we do not reject the null hypothesis, there is not sufficient evidence that the dogs retrieve the toys more or less successfully when learning their names directly or from overhearing.
+The $p$-value for the Overhearing data is less than $0.05$ so we have evidence to reject the null hypothesis, there is evidence that the dogs did not retrieve the correct toy by chance. The $p$-value for the Difference data is much greater than $0.05$, however, so we do not reject the null hypothesis, there is not sufficient evidence that the dogs retrieve the toys more or less successfully when learning their names directly or from overhearing.
 
 ::: {.columns}
 ::: {.column width="75%"}
 ![Wilcoxon Distribution with Rejection Region and Observed Values](Plot1.png)
 :::
 ::: {.column width="25%"}
-This graph shows the Wilcoxon distribution for a sample of size $n = 10$, along with the rejection region for a two-sided test ($\alpha = 0.025$ on either side). We can see that the Wilcoxon score for the Difference data ($W = 21.5$) lies near the middle of the distribution so we do not reject the null in this case. However, the Wilcoxon score for the Overhearing data ($W = 54.0$) lies far in the rejection region so we do reject the null.
+This graph shows the Wilcoxon distribution for a sample of size $n = 10$, along with the rejection region for a two-sided test ($\alpha = 0.05$). We can see that the Wilcoxon score for the Difference data ($W = 21.5$) lies near the middle of the distribution so we do not reject the null in this case. However, the Wilcoxon score for the Overhearing data ($W = 54.0$) lies far in the rejection region so we do reject the null.
 :::
 :::
+
+## Binomial Test
+### Trials and Conditions
+@dror2026dogs performed two new-toy trials per dog, still $n=10$, and each dog chose the correct toy on the first try for each trial. The researchers assume that the probability that the dog chooses the new toy by chance is $50\%$. 
+
+For us to consider the binomial distribution to represent this data we must meet the $4$ conditions of using the binomial distribution: Binary outcomes, Independent trials, Number of trials fixed, and Same probability of success (BINS). The possible outcomes of the performed trials are either the dog successfully chooses the new toy ($1$) or they do not ($0$), so the binary condition is met. The trials are independent and performed on seperate dogs so the independence condition is met. The number of trials is fixed ($n=10$) and each trial is assumed to have the saem probability of success ($50\%$). Since all conditions are met for the binomial distribution it makes sense to do a binomial test on this data.
+
+### Exact Binomial Test
+
+For this test the data used was number of successes $x=10$ and number of trials $n=10$. When performing this test the researchers assume that the population parameter, the probability a dog will choose the correct toy the first time, is $p=50\%$. Below are my hypotheses:
+
+$$
+H_0:  p = 50\% \newline
+H_a: p \neq 50\%
+$$
+
+:::{.columns}
+:::{.column width="75%"}
+![A graph of the binomial distribution with parameters $n=10$ and $p=0.5$ with the observation $x=10$](Plot2.png)
+:::
+:::{.column width="25%"}
+From this graph we can see the binomial distribution for random variable with probability $p=0.5$ and $n=10$ trials. For a two-sided test with a confidence level of $95\%$ the rejection region falls on the interval $0\leq x\geq 2$ and $8\leq x\geq 10$. The observation made by researchers, $x=10$, is the maximum possible observation and lies on the farthest end of the rejection region, indicating a low probability of being observed if the population parameter $p$ is actually $50\%$.
+:::
+:::
+
+#### Test Results
+
+After performing the exact binomial test on the data with a confidence level of $95\%$, the probability of observing $10$ successes out of $10$ trials is $\approx0.00195$. Since the observed $p$-value is much less than $\alpha = 0.05$, we can reject the null hypothesis and say that there is statistically discernible evidence that the probability of the dogs choosing the correct toy on the first try is not $50\%$.
+
+### Gaussian Approximation of Binomial Distribution
+
+For sufficiently large samples, $n\geq30$, we can use the gaussian approximation of the binomial distribution chaning the parameters to:
+
+$$
+n = 10, p = 0.5 \newline
+\mu_0 = np, \sigma_0=\sqrt{(np(p-1))}
+$$
+
+:::{.columns}
+:::{.column width="75%"}
+![A graph of the gaussian approximation of the binomial distribution with the observation $x=10$](Plot3.png)
+:::
+:::{.column width="25%"}
+The gaussian approximation looks very similar to the excat distribution, but there are slight differences. Because the sample size is small and this model is just an approximation, the rejection region begins at a decimal value, however our data is discrete so I rounded towards the edges of the distribution for the rejection region. Even with this smaller rejection region, however, the result is the same, the observation of $100\%$ successes is in this region.
+:::
+:::
+
+#### Test Results
+
+Calculating the probability of the researchers' observation using the approximate distribution yielded a $p$-value of $\approx0.00443$. Even though the approximated $p$-value is more then $2\times$ larger than the exact ($\approx0.00195$), the conclusion of the tests are the same: reject the null.
+
+### Inference
+
+In the case of this specific expirement where all trials were successes, I think it is fair to make an inference based on the tests performed due to how low the $p$-values are. Both the exact binomial test and the Gaussian approximation produce $p$-values well below the significance level of $\alpha = 0.05$, providing strong evidence against the null hypothesis that the probability of a successful trial is $p = 0.5$. Therefore, the null hypothesis can be rejected in favor of the conclusion that the probability of success differs from chance. Although the Gaussian approximation produces a larger $p$-value than the exact binomial test, both methods lead to the same statistical conclusion. The difference between the two $p$-values is likely due to the small sample size ($n=10$) and the observed result being at the extreme end of the distribution. For this reason, the exact binomial test provides the more reliable inference for these data.
