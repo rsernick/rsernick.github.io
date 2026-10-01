@@ -30,6 +30,147 @@
     ]
   },
   {
+    "objectID": "Math354/HW2/HW2.html#part-a",
+    "href": "Math354/HW2/HW2.html#part-a",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part a",
+    "text": "Part a\nComplete the following steps in \\(R=1000\\) simulations.\n\nSimulate data for \\(k=5\\) samples \\(n=30\\) drawn from a standard Gaussian distribution.\nUse pairwise.t.test(..., p.adjust.method=\"none\") to compute unadjusted pairwise \\(t\\)-tests and record if any comparison yields statistically discernible support for a non-zero mean.\nUse rstatix::tukey_hsd(...) to compute the Tukey’s HSD adjusted pairwise tests and record if any comparison yields statistically discernible support for a non-zero mean.\n\nIn the end, describe the Type I error rates.\n\n\n\nCode\nn = 30\nk = 5\nR = 1:1000\n\n\nsignificance.dat = tibble(simulation = R, unadjusted = rep(NA, 1000), adjusted = rep(NA, 1000))\n\nfor(i in R){\n  dat = tibble(\n    value = rnorm(n * k),\n    group = as.factor(rep(1:k, each = n))\n  )\n  unadjusted = pairwise.t.test(dat$value, dat$group, p.adjust.method = 'none')\n  adjusted = rstatix::tukey_hsd(dat, value ~ group)\n\n  significance.dat$unadjusted[i] = any(unadjusted$p.value &lt; 0.05, na.rm = TRUE)\n  significance.dat$adjusted[i] = any(adjusted$p.adj &lt; 0.05)\n}\n\nt1.unadj = length(which(significance.dat$unadjusted == TRUE))/length(R)\nt1.adj = length(which(significance.dat$adjusted == TRUE))/length(R)\n\n\n\nThis simulation resulted in a type 1 error of \\(26.6\\%\\) for the unadjusted t-tests, and a type 1 error. of \\(5\\%\\) for the adjusted t-tests. This makes sense because without adjusting for Family Wise Error Rate (FWER) we expect the error rate to be \\(\\alpha \\times k\\) (\\(0.05\\times 5 = 0.30\\)), which is exactly what we see in the simulation. When adjusting we expect the FWER to be \\(\\alpha\\), and in this case the adjusted rate is approximately \\(\\alpha = 0.05\\).",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-b",
+    "href": "Math354/HW2/HW2.html#part-b",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part b",
+    "text": "Part b\nRedo the simulation, changing to adjust according to the false discovery rate p.adjust.method=\"BH\" and comment on the differences.\n\n\n\nCode\nn = 30\nk = 5\n\nBH = rep(NA, 1000)\n\nR = 1:1000\nfor(i in R){\n  dat = tibble(\n    value = rnorm(n * k),\n    group = as.factor(rep(1:k, each = n))\n  )\n  bhadjust = pairwise.t.test(dat$value, dat$group, p.adjust.method = 'BH')\n\n  BH[i] = any(bhadjust$p.value &lt; 0.05, na.rm = TRUE)\n}\n\nt1.BH = length(which(BH == TRUE))/length(R)\n\n\n\nRunning the simulation again while using the ‘BH’ adjust method yields a type 1 error of \\(5.1\\%\\) which is what we would expect for the adjusted FWER.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-a-1",
+    "href": "Math354/HW2/HW2.html#part-a-1",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part a",
+    "text": "Part a\nAssume the researchers were targeting a moderate effect size of Cohen’s \\(f = 0.25\\), setting significance level \\(\\alpha = 0.05\\) and desired power \\(1 - \\beta = 0.80\\). Were they adequately powered?\nNote: The actual effect size is \\(f=0.55\\), but researchers usually do not know that ahead of time and defaulted to moderate, instead of specifying a large effect.\nWhat is the required sample size per group (\\(n\\)) and the overall total sample size (\\(N\\))? Write the R code using the pwr package to calculate this sample size. This package assumes all samples are of the same size so \\(N=nk\\), where \\(k\\) is the number of samples. Note that the best answers will have a corresponding graphical display.\n\n\n\nCode\nlibrary(pwr)\nk = 5\nf = 0.25\nalpha = 0.05\npower = 0.8\n\nanova.power = pwr::pwr.anova.test(k = k, f = f, sig.level = alpha, power = power)\n\nn = ceiling(anova.power$n)\nN = n*k\n\npower.dat = tibble(n = 2:75, power = rep(0, 74))\n\nfor(i in 2:75){\n  power.dat$power[i-1] = pwr::pwr.anova.test(k = k, n = i, f = f, sig.level = alpha)$power\n}\n\nggplot(data = power.dat)+\n  geom_line(aes(x = n, y = power))+\n  geom_hline(aes(color = \"Desired Power\", yintercept = 0.8))+\n  geom_hline(yintercept = 0)+\n  geom_ribbon(aes(ymin = 0, ymax = ifelse(power&gt;=0.8,power,0), x = n), fill = \"green\", alpha = 0.3)+\n  scale_color_manual(values = c(\"Desired Power\" = \"green\", \"Desired n\" = \"blue\"))+\n  theme_minimal()\n\n\n\n\n\n\n\nPlotting power vs group sample size\n\n\n\n\nThis graph shows the relationship between the group sample size (\\(n\\)) and power. As \\(n\\) increases power increases aswell. On the graph the calculated n required to get power of atleast \\(80\\%\\) (marked in green) is shown by the green shaded region.\n\n\nUsing the package I was able to run the simulation above showing what group sample sizes will achieve what power. Additionally I calculated the required group sample size (\\(n = 40\\)) to achieve a power of \\(0.8\\) and total sample size (\\(N = 200\\)) assuming each group has the same sample size.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-b-1",
+    "href": "Math354/HW2/HW2.html#part-b-1",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part b",
+    "text": "Part b\nThe project was funded by several agencies. Suppose that a funding agency suggested funding limiting the researchers to \\(N=150\\). Evaluate this suggestion in the context of the ANOVA. Would that be large enough to be adequately powered?\nCompute the non-centrality parameter \\[\\lambda = k \\cdot n \\cdot f^2\\] and use the non-central \\(F\\) distribution to compute the power under \\(H_a\\) for Cohen’s \\(f = 0.25\\). Calculate the statistical power achieved under this budget constraint. Note that the best answers will have a corresponding graphical display.\n\n\n\nCode\nN = 150\nk = 5\nn = N/k\nf = 0.25\n\nlambda = N*(f^2)\n\nF = qf(0.95, k-1, N-k)\npower = pf(F, k-1, N-k, ncp = lambda, lower.tail = FALSE)\n\nf.dat = tibble(f = seq(0, 10, length.out = 1000)) |&gt;\n  mutate(density1 = df(f, k-1, N-k, lambda),\n         density2 = df(f, k-1, N-k))\n\nggplot(data = f.dat)+\n  geom_line(aes(x = f, y = density1, color = \"Non-Central F\"))+\n  geom_line(aes(x = f, y = density2, color = \"F\"))+\n  geom_ribbon(aes(ymin = 0, ymax = ifelse(f &gt; F, density1, 0), x = f, fill = \"Power\"), alpha = 0.3)+\n  geom_ribbon(aes(ymin = 0, ymax = ifelse(f &lt; F, density1, 0), x = f, fill = \"Type 2 Error\"), alpha = 0.3)+\n  geom_ribbon(aes(ymin = 0, ymax = ifelse(f &gt; F, density2, 0), x = f, fill = \"Type 1 Error\"), alpha = 0.3)+\n  geom_hline(yintercept = 0)+\n  labs(y = \"Density\", x = \"F\")+\n  scale_color_manual(values = c(\"Non-Central F\" = \"blue\", \"F\" = \"black\"))+\n  scale_fill_manual(values = c(\"Power\" = \"purple\", \"Type 1 Error\" = \"red\", \"Type 2 Error\" = \"yellow\"))+\n  theme_minimal()\n\n\n\n\n\n\n\nVisualizing Power using F-distributions\n\n\n\n\nThis graph shows the central F-distribution with parameters \\(\\text{df}_1 = 4\\) and \\(\\text{df}_2 = 145\\) and the non central F-distribution with the same degrees of freedom and non centrality parameter \\(\\lambda = 9.38\\), calculated for an effect size \\(f = 0.25\\). Using the critical F calculated in the code above (\\(F_{\\textit{critical}} = 2.43\\)), the graph displays the power, and the type 1 and 2 errors if the total sample size were \\(N = 150\\).\n\n\nBy computing the non centrality parameter \\(\\lambda = 9.38\\), and the critical F statistic \\(F_{\\textit{critical}} = 2.43\\), I was able to compare the central F-distribution with the noncentral F-distribution which we assume is the population distribution. With \\(\\alpha = 0.05\\) and effect size \\(f = 0.25\\), the expected power for a sample size \\(N = 150\\) is \\(0.67\\). This is not sufficient because it is less than the desired power \\(0.8\\)",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-c",
+    "href": "Math354/HW2/HW2.html#part-c",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part c",
+    "text": "Part c\nIn the article the researchers state:\n\nHowever, the statistical power was not sufficient to allow an accurate discrimination of no to moderate stages of hepatic fibrosis (F0–F2) from severe fibrosis and cirrhosis (F3 and F4).\n\nThe European Association for the Study of the Liver (EASL) provides treatment recommendations based on these stages.\n\nStages 0-1: Treatment is deferred with regularly assessment\nStage 2: Treatment is justified for those in stage 2\nStage 3-4: Treatment is a priority for those in stages\n\nSuppose the researcher wanted to perform a follow-up test where they want to ensure adequate power not just for the overall ANOVA \\(F\\)-test, but specifically to detect a pairwise differences between stages 1 and 2. Explain why the sample size computed in Part a may not be enough and use PMCMRplus::power.tukey.test() to compute a sample size that attains adequate power.\nNote: The researchers would have had to do this a priori. Because we aren’t medical experts, you can use sample estimates using the original data. \\[\\begin{align*}\n  n & = \\text{answer from part a}\\\\\n  \\mu_{\\Delta} & = 0.25 \\\\\n  \\sigma^2_{\\text{pooled}} & = \\frac{(176-1)0.85^2 + (135-1)0.84^2}{176+135-2} = 0.7152\\\\\n  \\sigma_{\\text{within}}= 0.77\n\\end{align*}\\]",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-d",
+    "href": "Math354/HW2/HW2.html#part-d",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part d",
+    "text": "Part d\nHow does the answer to Part c change if they wanted to have adequate power for all pairwise comparisons? Use Superpower::ANOVA_design() to set up the ANOVA set up.\nNote: Use design “5b” and the following. \\[\\begin{align*}\n  \\boldsymbol{\\mu} &= \\{2.92, 3.11, 3.36, 4.04, 4.35\\}\\\\\n  \\sigma^2 &= \\frac{(97-1)0.87^2 + (176-1)0.85^2 + (135-1)0.84^2 + (67-1)1.00^2 + (67-1)0.90^2}{97+176+135+67+67-5} = 0.80\n\\end{align*}\\]\nCompute the power of the researcher’s design (part a) using Superpower::ANOVA_power(). If the researchers were able to oversample by double, a common approach to addressing this issue, would their power be at least 80% for all pariwise comparisons?\nNote: This code can take a minute. You may want to set cache: true in your R chunk yaml header. You will also see more power because the actual effect size was 0.55.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-a-2",
+    "href": "Math354/HW2/HW2.html#part-a-2",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part a",
+    "text": "Part a\nState the null (\\(H_0\\)) and alternative (\\(H_a\\)) hypotheses for the omnibus test.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-b-2",
+    "href": "Math354/HW2/HW2.html#part-b-2",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part b",
+    "text": "Part b\nPerform some exploratory data analysis to provide empirical information about the researchers question.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-c-1",
+    "href": "Math354/HW2/HW2.html#part-c-1",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part c",
+    "text": "Part c\nPerform and report the results of the omnibus test. Make sure to evaluate the conditions for using the method you choose.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-d-1",
+    "href": "Math354/HW2/HW2.html#part-d-1",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part d",
+    "text": "Part d\nConduct post-hoc pairwise comparisons to determine if age-induced inflammatory glucose hypermetabolism increase with age and whether low-dose nicotine reduces age-induced inflammatory glucose hypermetabolism.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "Math354/HW2/HW2.html#part-e",
+    "href": "Math354/HW2/HW2.html#part-e",
+    "title": "Homework 2 – k Sample Inference",
+    "section": "Part e",
+    "text": "Part e\nWrite a short paragraph directly addressing the researcher’s hypothesis using your work in (a)-(d).",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 2: k Sample Inference"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
+    "objectID": "index.html#welcome",
+    "href": "index.html#welcome",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About Me",
@@ -57,26 +198,6 @@
     "text": "Technical Skills\n\nLanguages: R, Python, Java, C\nTools: Positron, Quarto, Git/GitHub, LaTeX",
     "crumbs": [
       " About"
-    ]
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Academic Portfolio",
-    "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
-    "crumbs": [
-      " Home"
-    ]
-  },
-  {
-    "objectID": "index.html#welcome",
-    "href": "index.html#welcome",
-    "title": "Academic Portfolio",
-    "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
-    "crumbs": [
-      " Home"
     ]
   },
   {

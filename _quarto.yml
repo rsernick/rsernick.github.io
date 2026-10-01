@@ -42,6 +42,8 @@ website:
         contents:
           - text: "HW 1: Can Dogs Learn Words by Overhearing"
             href: Math354/HW1/Hw1.qmd
+          - text: "HW 2: k Sample Inference"
+            href: Math354/HW2/HW2.qmd
 
 
   page-footer: 
