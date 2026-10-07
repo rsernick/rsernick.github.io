@@ -102,21 +102,22 @@ ggplot(data = f.dat)+
 ## 2.3
 library(PMCMRplus)
 n = 30
-k = 2
+k = 5
 
-power = PMCMRplus::power.tukey.test(n = n, groups = k, delta = 0.25, within.var = 0.77)$power
+power1 = PMCMRplus::power.tukey.test(n = n, groups = k, delta = 0.25, within.var = 0.77^2)$power
+power = 0
 
 while(power < 0.8){
   n = n + 1
-  power = PMCMRplus::power.tukey.test(n = n, groups = k, delta = 0.25, within.var = 0.77)$power
+  power = PMCMRplus::power.tukey.test(n = n, groups = k, delta = 0.25, within.var = 0.77^2)$power
 }
 
-power.dat = rep(0, 249)
+power.dat = rep(0, 299)
 
-pair.power = tibble(n = 2:250)
+pair.power = tibble(n = 2:300)
 
 for(i in pair.power$n){
-  power.dat[i-1] = PMCMRplus::power.tukey.test(n = i, groups = k, delta = 0.25, within.var = 0.77)$power
+  power.dat[i-1] = PMCMRplus::power.tukey.test(n = i, groups = k, delta = 0.25, within.var = 0.77^2)$power
 }
 
 pair.power = pair.power |>
@@ -129,3 +130,65 @@ ggplot(data = pair.power)+
   geom_hline(yintercept = 0)+
   labs(x = "n", y = "Power")+
   theme_minimal()
+
+## 2.4
+library(Superpower)
+n = 30
+k = 5
+anova1 = Superpower::ANOVA_design(design = "5b", n = n, mu = c(2.92,3.11,3.36,4.04,4.35), sd = sqrt(0.8))
+power1 = Superpower::ANOVA_power(anova1, alpha_level = 0.05)
+anova2 = Superpower::ANOVA_design(design = "5b", n = n*2, mu = c(2.92,3.11,3.36,4.04,4.35), sd = sqrt(0.8))
+power2 = Superpower::ANOVA_power(anova2, alpha_level = 0.05)
+
+stages = c("Stage 0", "Stage 1", "Stage 2", "Stage 3", "Stage 4")
+comparisons = rep("", 10)
+index = 1;
+for(i in 1:(length(stages)-1)){
+  for(k in (i+1):length(stages)){
+    comparisons[index] = paste(stages[i], stages[k], sep = " vs ")
+    index = index + 1
+  }
+}
+
+
+comp.dat = tibble(Comparison = comparisons, Original = power1$pc_results$power, Double = power2$pc_results$power)|>
+  add_row(Comparison = "Overall", Original = power1$main_results$power, Double = power2$main_results$power, .before = 1)
+
+underpowered = comp.dat |>
+  filter(Original < 80)
+
+## 3
+
+mouse.dat = tibble(Replicate = 1:3, `2M` = c(1.48969, 1.30168, 1.30620), 
+                   `6M` = c(4.36000, 4.28807, 3.64184), `16M` = c(7.30182, 7.12416, 8.28764),
+                    Treatment = c(4.69304, 2.51326, 2.38019))
+
+
+mouse.long = mouse.dat |>
+  pivot_longer(cols = -Replicate, names_to = "Group", values_to = "Value")
+
+mouse.summary = mouse.long |>
+  group_by(Group) |>
+  summarise(mean = mean(Value), sd = sd(Value))
+
+## 3.3
+
+anova.dat = rstatix::anova_test(mouse.long, Value ~ Group)
+
+pairwise.test = rstatix::tukey_hsd(mouse.long, Value ~ Group)
+
+
+power.design = Superpower::ANOVA_design("4b", 3, mouse.summary$mean, mouse.summary$sd)
+power.results = Superpower::ANOVA_power(power.design, alpha_level = 0.05)
+
+stages = mouse.summary$Group
+comparisons = rep("", 6)
+index = 1;
+for(i in 1:(length(stages)-1)){
+  for(k in (i+1):length(stages)){
+    comparisons[index] = paste(stages[i], stages[k], sep = " vs ")
+    index = index + 1
+  }
+}
+
+overall.results = tibble(Comparisons = comparisons, pvalue = pairwise.test$p.adj, power = paste0(power.results$pc_results$power, "%"))

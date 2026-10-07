@@ -84,7 +84,7 @@ Complete the following steps in $R=1000$ simulations.
 In the end, describe the Type I error rates.
 
 ```{r}
-
+#| cache: true
 n = 30
 k = 5
 R = 1:1000
@@ -114,6 +114,7 @@ This simulation resulted in a type 1 error of $`r t1.unadj*100`\%$ for the unadj
 Redo the simulation, changing to adjust according to the false discovery rate `p.adjust.method="BH"` and comment on the differences.
 
 ```{r}
+#| cache: true
 n = 30
 k = 5
 
@@ -182,7 +183,7 @@ This graph shows the relationship between the group sample size ($n$) and power.
 :::
 :::
 
-Using the \texttt{pwr} package I was able to run the simulation above showing what group sample sizes will achieve what power. Additionally I calculated the required group sample size ($n = `r n`$) to achieve a power of $0.8$ and total sample size ($N = `r N`$) assuming each group has the same sample size.
+Using the `pwr` package I was able to run the simulation above showing what group sample sizes will achieve what power. Additionally I calculated the required group sample size ($n = `r n`$) to achieve a power of $0.8$ and total sample size ($N = `r N`$) assuming each group has the same sample size.
 
 
 ## Part b
@@ -253,6 +254,53 @@ Suppose the researcher wanted to perform a follow-up test where they want to ens
   \sigma_{\text{within}}= 0.77
 \end{align*}
 
+```{r}
+#| output: false
+#| cache: true
+library(PMCMRplus)
+n = 30
+k = 5
+
+power1 = PMCMRplus::power.tukey.test(n = n, groups = k, delta = 0.25, within.var = 0.77^2)$power
+power = 0
+
+while(power < 0.8){
+  n = n + 1
+  power = PMCMRplus::power.tukey.test(n = n, groups = k, delta = 0.25, within.var = 0.77^2)$power
+}
+
+power.dat = rep(0, 299)
+
+pair.power = tibble(n = 2:300)
+
+for(i in pair.power$n){
+  power.dat[i-1] = PMCMRplus::power.tukey.test(n = i, groups = k, delta = 0.25, within.var = 0.77^2)$power
+}
+
+pair.power = pair.power |>
+  mutate(power = power.dat)
+
+ggplot(data = pair.power)+
+  geom_line(aes(x = n, y = power,))+
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "green")+
+  geom_vline(xintercept = 30, linetype = "dashed", color = "red")+
+  geom_hline(yintercept = 0)+
+  labs(x = "n", y = "Power")+
+  theme_minimal()
+```
+
+:::{.columns}
+:::{.column width="75%"}
+![Power of the Pairwise Comparison as n Increases](powerplot2.png)
+:::
+:::{.column width="25%"}
+This graph shows the power of a pairwise test between stages 1 and 2 as the group sample size increases. There is a significant difference in the sample size needed for adequate power between the overall ANOVA F-test and the pairwise test. Shown in [red]{style="color: red;"} is the sample size required for the overall ANOVA test, and shown in [green]{style="color: lightgreen;"} is the desired power ($0.8$). As you can see the with $n = 30$ the power of the pairwise test is only $`r round(power1, 2)`$ and at power $= 0.8$ the sample size would have to be $n = `r n`$.
+:::
+:::
+
+The sample size originally calculated in part a ($n = 30$) may not be enough for the pairwise comparison because the overall ANOVA test tests the if all 5 means are the same, but the pairwise test compares only two means. Thus, more data would be required to test the difference of two means. Using `PMCMRplus::power.tukey.test` from the I calculated that a sample size of $n = `r n`$ is required to achieve power $= 0.8$. This is greater than $8$ times the sample size calculated in part a.
+
+
 ## Part d
 How does the answer to Part c change if they wanted to have adequate power for *all* pairwise comparisons? Use `Superpower::ANOVA_design()` to set up the ANOVA set up.
 
@@ -265,6 +313,44 @@ How does the answer to Part c change if they wanted to have adequate power for *
 Compute the power of the researcher's design (part a) using `Superpower::ANOVA_power()`. If the researchers were able to oversample by double, a common approach to addressing this issue, would their power be at least 80% for all pariwise comparisons?
 
 **Note**: This code can take a minute. You may want to set `cache: true` in your `R` chunk yaml header. You will also see more power because the actual effect size was 0.55.
+
+```{r}
+#| cache: true
+#| output: false
+library(Superpower)
+n = 30
+k = 5
+anova1 = Superpower::ANOVA_design(design = "5b", n = n, mu = c(2.92,3.11,3.36,4.04,4.35), sd = sqrt(0.8))
+power1 = Superpower::ANOVA_power(anova1, alpha_level = 0.05)
+anova2 = Superpower::ANOVA_design(design = "5b", n = n*2, mu = c(2.92,3.11,3.36,4.04,4.35), sd = sqrt(0.8))
+power2 = Superpower::ANOVA_power(anova2, alpha_level = 0.05)
+
+stages = c("Stage 0", "Stage 1", "Stage 2", "Stage 3", "Stage 4")
+comparisons = rep("", 10)
+index = 1;
+for(i in 1:(length(stages)-1)){
+  for(k in (i+1):length(stages)){
+    comparisons[index] = paste(stages[i], stages[k], sep = " vs ")
+    index = index + 1
+  }
+}
+
+
+comp.dat = tibble(Comparison = comparisons, Original = power1$pc_results$power, Double = power2$pc_results$power)|>
+  add_row(Comparison = "Overall", Original = power1$main_results$power, Double = power2$main_results$power, .before = 1)
+
+underpowered = comp.dat |>
+  filter(Original < 80)
+```
+
+|Comparison         | Original| Double|
+|:------------------|--------:|------:|
+|Stage 0 vs Stage 1 |     $12.2\%$|   $22.4\%$|
+|Stage 0 vs Stage 2 |     $48.9\%$|   $79.2\%$|
+|Stage 1 vs Stage 2 |     $20.4\%$|   $34.9\%$|
+|Stage 3 vs Stage 4 |     $27.3\%$|   $47.6\%$|
+
+Using `Superpower::ANOVA_design()` and `Superpower::ANOVA_power()`, I calculated the power of each comparison for both $n=30$ (the original sample size) and $n=60$ (double sample size). In the table above are the comparisons where $\text{power} < 80\%$ for the , all other comparisons had sufficient power. As shown in the table above, all four comparisons that were underpowered at $n=30$ are still underpowered at $n=60$.
 
 # Question 3: An Application
 @Yang23 investigate whether low-dose nicotine can counteract age-related metabolic decline. The proposed mechanism is through $\text{NAD}^+$, which is a chemical compound essential for metabolic energy production. The idea is that low-dose nicotine could help improve and/or maintain the recycling of $\text{NAD}^+$ by activating the salvage enzyme NAMPT via SIRT1. This could, in turn, restore $\text{NAD}^+$ homeostasis, which is the biological balance maintained within a cell between the production, recycling, and degradation of nicotinamide adenine dinucleotide ($\text{NAD}^+$).
@@ -296,16 +382,85 @@ Using PET imaging, the researchers measured age-induced inflammatory glucose hyp
 ## Part a
 State the null ($H_0$) and alternative ($H_a$) hypotheses for the omnibus test.
 
+$$
+H_0 : \mu_{2M} = \mu_{6M} = \mu_{16M} = \mu_{16M,\textit{ treatment}} \\
+H_a : \text{Atleast one mean differs}
+$$
+
 
 ## Part b
 Perform some exploratory data analysis to provide empirical information about the researchers question.
 
+|Group     | mean|   sd|
+|:---------|----:|----:|
+|16M, Treatment | 3.19| 1.29|
+|16M       | 7.57| 0.62|
+|6M        | 4.09| 0.39|
+|2M        | 1.36| 0.10|
+
+The table above shows the means and standard deviations of each group. Empirically it seems as if groups 2M, 6M, and 16M are not within $2$ standard deviations of eachother, so there may be a significant difference in $\text{SUV}_{\text{max}}$ across age groups. The treatment group, however, has much higher variability so it is less certain wether the treatment makes a difference.
+
+
+
+
 ## Part c
 Perform and report the results of the omnibus test. Make sure to evaluate the conditions for using the method you choose.
+
+For this data it makes sense to do an ANOVA test. The conditions for this test are independence, normality, and similar variances. This data meets the independence condition as the reseacrhers made sure their observations across groups were independent. The normality and similar variances assumptions are not met however, as the sample size for each group is only $n = 3$, and the variances are dissimilar. ANOVA is robust to these assumptions so I feel comfortable running the test anyways.
+
+```{r}
+mouse.dat = tibble(Replicate = 1:3, `2M` = c(1.48969, 1.30168, 1.30620), 
+                   `6M` = c(4.36000, 4.28807, 3.64184), `16M` = c(7.30182, 7.12416, 8.28764),
+                    Treatment = c(4.69304, 2.51326, 2.38019))
+
+
+mouse.long = mouse.dat |>
+  pivot_longer(cols = -Replicate, names_to = "Group", values_to = "Value")
+
+mouse.summary = mouse.long |>
+  group_by(Group) |>
+  summarise(mean = mean(Value), sd = sd(Value))
+
+anova.dat = rstatix::anova_test(mouse.long, Value ~ Group)
+```
+
+After organizing the data and using the `rstatix::anova_test()` function, the F-value for the data was $`{r} anova.dat$F`$ and the p value was $< 0.0001$. This tells us that there if we assume the null hypothesis to be true, the probability that we get the data we got is less than $0.01\%$. From the results of this test it can be concluded that there is statistically discernable support that the mean $\text{SUV}_{\text{max}}$ across age groups in mice are not the same.
 
 ## Part d
 Conduct post-hoc pairwise comparisons to determine if age-induced inflammatory glucose hypermetabolism increase with age and whether low-dose nicotine reduces age-induced inflammatory glucose hypermetabolism. 
 
+The previous test told us there is a difference among the means but it does not tell us how much of a difference, or where the it is. In order to see where the differences lie and how significant they are, I used `rstatix::tukey_hsd` to run a pairwise comparison test on all the groups.
+
+```{r}
+#| cache: true
+#| output: false
+pairwise.test = rstatix::tukey_hsd(mouse.long, Value ~ Group)
+
+
+power.design = Superpower::ANOVA_design("4b", 3, mouse.summary$mean, mouse.summary$sd)
+power.results = Superpower::ANOVA_power(power.design, alpha_level = 0.05)
+
+stages = mouse.summary$Group
+comparisons = rep("", 6)
+index = 1;
+for(i in 1:(length(stages)-1)){
+  for(k in (i+1):length(stages)){
+    comparisons[index] = paste(stages[i], stages[k], sep = " vs ")
+    index = index + 1
+  }
+}
+
+overall.results = tibble(Comparisons = comparisons, pvalue = paste0(pairwise.test$p.adj*100, "%"), power = paste0(power.results$pc_results$power, "%"))
+```
+
+```{r}
+#| echo: false
+knitr::kable(overall.results)
+```
+
+In addition to running the pairwise tests, I also used `Superpower::ANOVA_design()` and `Superpower::ANOVA_power()` to do a power analysis on our tests. As shown in the table above, there is statistically discernible support a difference between the 16M group and all other age groups along with treatment, and a difference between 2M and 6M. These tests also all have sufficient power. There is not support for a difference between 2M vs. treatment and 6M vs. treatment. 
+
 ## Part e
 Write a short paragraph directly addressing the researcher's hypothesis using your work in (a)-(d).
 
+The researchers hypothesized that low doses of nicotine could counteract age-related metabolic decline. To measure this they looked at age-induced inflammatory glucose hypermetabolism ($\text{SUV}_{\text{max}}$). Their data met the conditions for an ANOVA test, and the results of the test showed that there is a difference in the means of $\text{SUV}_{\text{max}}$ in different age groups of mice and the treatment group. The second post-hoc test, a pairwise test among groups, revealed that there is a significant difference between $\text{SUV}_{\text{max}}$ levels among age groups 2M, 6M, and 16M. Since these comparisons yielded a p-value less than $0.05$ and had power greater than $0.80$, we can conclude that $\text{SUV}_{\text{max}}$ increases with age. The only other pairwise test that was statistically significant was 16M vs treatment. This shows that among the population of mice treated with nicotine, the average $\text{SUV}_{\text{max}}$ at 16 months is lower than the average of mice not treated with nicotine at 16 months. These results provide support for the researchers hypothesis.

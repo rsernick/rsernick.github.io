@@ -390,7 +390,7 @@ window.Quarto = {
 </details>
 </div>
 <p></p>
-<p>This simulation resulted in a type 1 error of <span class="math inline">\(26.6\%\)</span> for the unadjusted t-tests, and a type 1 error. of <span class="math inline">\(5\%\)</span> for the adjusted t-tests. This makes sense because without adjusting for Family Wise Error Rate (FWER) we expect the error rate to be <span class="math inline">\(\alpha \times k\)</span> (<span class="math inline">\(0.05\times 5 = 0.30\)</span>), which is exactly what we see in the simulation. When adjusting we expect the FWER to be <span class="math inline">\(\alpha\)</span>, and in this case the adjusted rate is approximately <span class="math inline">\(\alpha = 0.05\)</span>.</p>
+<p>This simulation resulted in a type 1 error of <span class="math inline">\(28.2\%\)</span> for the unadjusted t-tests, and a type 1 error. of <span class="math inline">\(5.2\%\)</span> for the adjusted t-tests. This makes sense because without adjusting for Family Wise Error Rate (FWER) we expect the error rate to be <span class="math inline">\(\alpha \times k\)</span> (<span class="math inline">\(0.05\times 5 = 0.30\)</span>), which is exactly what we see in the simulation. When adjusting we expect the FWER to be <span class="math inline">\(\alpha\)</span>, and in this case the adjusted rate is approximately <span class="math inline">\(\alpha = 0.05\)</span>.</p>
 </section>
 <section id="part-b" class="level2">
 <h2 class="anchored" data-anchor-id="part-b">Part b</h2>
@@ -419,7 +419,7 @@ window.Quarto = {
 </details>
 </div>
 <p></p>
-<p>Running the simulation again while using the ‘BH’ adjust method yields a type 1 error of <span class="math inline">\(5.1\%\)</span> which is what we would expect for the adjusted FWER.</p>
+<p>Running the simulation again while using the ‘BH’ adjust method yields a type 1 error of <span class="math inline">\(4.4\%\)</span> which is what we would expect for the adjusted FWER.</p>
 </section>
 </section>
 <section id="question-2-power-analyses" class="level1">
@@ -473,7 +473,7 @@ window.Quarto = {
 <p>This graph shows the relationship between the group sample size (<span class="math inline">\(n\)</span>) and power. As <span class="math inline">\(n\)</span> increases power increases aswell. On the graph the calculated n required to get power of atleast <span class="math inline">\(80\%\)</span> (marked in green) is shown by the green shaded region.</p>
 </div>
 </div>
-<p>Using the package I was able to run the simulation above showing what group sample sizes will achieve what power. Additionally I calculated the required group sample size (<span class="math inline">\(n = 40\)</span>) to achieve a power of <span class="math inline">\(0.8\)</span> and total sample size (<span class="math inline">\(N = 200\)</span>) assuming each group has the same sample size.</p>
+<p>Using the <code>pwr</code> package I was able to run the simulation above showing what group sample sizes will achieve what power. Additionally I calculated the required group sample size (<span class="math inline">\(n = 40\)</span>) to achieve a power of <span class="math inline">\(0.8\)</span> and total sample size (<span class="math inline">\(N = 200\)</span>) assuming each group has the same sample size.</p>
 </section>
 <section id="part-b-1" class="level2">
 <h2 class="anchored" data-anchor-id="part-b-1">Part b</h2>
@@ -544,6 +544,56 @@ window.Quarto = {
   \sigma^2_{\text{pooled}} &amp; = \frac{(176-1)0.85^2 + (135-1)0.84^2}{176+135-2} = 0.7152\\
   \sigma_{\text{within}}= 0.77
 \end{align*}\]</span></p>
+<p></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-label="1"></a><span class="fu">library</span>(PMCMRplus)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-label="2"></a>n <span class="ot">=</span> <span class="dv">30</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-label="3"></a>k <span class="ot">=</span> <span class="dv">5</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-label="4"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-label="5"></a>power1 <span class="ot">=</span> PMCMRplus<span class="sc">::</span><span class="fu">power.tukey.test</span>(<span class="at">n =</span> n, <span class="at">groups =</span> k, <span class="at">delta =</span> <span class="fl">0.25</span>, <span class="at">within.var =</span> <span class="fl">0.77</span><span class="sc">^</span><span class="dv">2</span>)<span class="sc">$</span>power</span>
+<span id="cb5-6"><a href="#cb5-6" aria-label="6"></a>power <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-label="7"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-label="8"></a><span class="cf">while</span>(power <span class="sc">&lt;</span> <span class="fl">0.8</span>){</span>
+<span id="cb5-9"><a href="#cb5-9" aria-label="9"></a>  n <span class="ot">=</span> n <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-label="10"></a>  power <span class="ot">=</span> PMCMRplus<span class="sc">::</span><span class="fu">power.tukey.test</span>(<span class="at">n =</span> n, <span class="at">groups =</span> k, <span class="at">delta =</span> <span class="fl">0.25</span>, <span class="at">within.var =</span> <span class="fl">0.77</span><span class="sc">^</span><span class="dv">2</span>)<span class="sc">$</span>power</span>
+<span id="cb5-11"><a href="#cb5-11" aria-label="11"></a>}</span>
+<span id="cb5-12"><a href="#cb5-12" aria-label="12"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-label="13"></a>power.dat <span class="ot">=</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">299</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-label="14"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-label="15"></a>pair.power <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">n =</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">300</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-label="16"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-label="17"></a><span class="cf">for</span>(i <span class="cf">in</span> pair.power<span class="sc">$</span>n){</span>
+<span id="cb5-18"><a href="#cb5-18" aria-label="18"></a>  power.dat[i<span class="dv">-1</span>] <span class="ot">=</span> PMCMRplus<span class="sc">::</span><span class="fu">power.tukey.test</span>(<span class="at">n =</span> i, <span class="at">groups =</span> k, <span class="at">delta =</span> <span class="fl">0.25</span>, <span class="at">within.var =</span> <span class="fl">0.77</span><span class="sc">^</span><span class="dv">2</span>)<span class="sc">$</span>power</span>
+<span id="cb5-19"><a href="#cb5-19" aria-label="19"></a>}</span>
+<span id="cb5-20"><a href="#cb5-20" aria-label="20"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-label="21"></a>pair.power <span class="ot">=</span> pair.power <span class="sc">|&gt;</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-label="22"></a>  <span class="fu">mutate</span>(<span class="at">power =</span> power.dat)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-label="23"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-label="24"></a><span class="fu">ggplot</span>(<span class="at">data =</span> pair.power)<span class="sc">+</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-label="25"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> n, <span class="at">y =</span> power,))<span class="sc">+</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-label="26"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fl">0.8</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"green"</span>)<span class="sc">+</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-label="27"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">30</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>)<span class="sc">+</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-label="28"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)<span class="sc">+</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-label="29"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"n"</span>, <span class="at">y =</span> <span class="st">"Power"</span>)<span class="sc">+</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-label="30"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p></p>
+<div class="columns">
+<div class="column" style="width:75%;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<figcaption>Power of the Pairwise Comparison as n Increases</figcaption>
+<p><img src="powerplot2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div><div class="column" style="width:25%;">
+<p>This graph shows the power of a pairwise test between stages 1 and 2 as the group sample size increases. There is a significant difference in the sample size needed for adequate power between the overall ANOVA F-test and the pairwise test. Shown in <span style="color: red;">red</span> is the sample size required for the overall ANOVA test, and shown in <span style="color: lightgreen;">green</span> is the desired power (<span class="math inline">\(0.8\)</span>). As you can see the with <span class="math inline">\(n = 30\)</span> the power of the pairwise test is only <span class="math inline">\(0.07\)</span> and at power <span class="math inline">\(= 0.8\)</span> the sample size would have to be <span class="math inline">\(n = 243\)</span>.</p>
+</div>
+</div>
+<p>The sample size originally calculated in part a (<span class="math inline">\(n = 30\)</span>) may not be enough for the pairwise comparison because the overall ANOVA test tests the if all 5 means are the same, but the pairwise test compares only two means. Thus, more data would be required to test the difference of two means. Using <code>PMCMRplus::power.tukey.test</code> from the I calculated that a sample size of <span class="math inline">\(n = 243\)</span> is required to achieve power <span class="math inline">\(= 0.8\)</span>. This is greater than <span class="math inline">\(8\)</span> times the sample size calculated in part a.</p>
 </section>
 <section id="part-d" class="level2">
 <h2 class="anchored" data-anchor-id="part-d">Part d</h2>
@@ -554,6 +604,75 @@ window.Quarto = {
 \end{align*}\]</span></p>
 <p>Compute the power of the researcher’s design (part a) using <code>Superpower::ANOVA_power()</code>. If the researchers were able to oversample by double, a common approach to addressing this issue, would their power be at least 80% for all pariwise comparisons?</p>
 <p><strong>Note</strong>: This code can take a minute. You may want to set <code>cache: true</code> in your <code>R</code> chunk yaml header. You will also see more power because the actual effect size was 0.55.</p>
+<p></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-label="1"></a><span class="fu">library</span>(Superpower)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-label="2"></a>n <span class="ot">=</span> <span class="dv">30</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-label="3"></a>k <span class="ot">=</span> <span class="dv">5</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-label="4"></a>anova1 <span class="ot">=</span> Superpower<span class="sc">::</span><span class="fu">ANOVA_design</span>(<span class="at">design =</span> <span class="st">"5b"</span>, <span class="at">n =</span> n, <span class="at">mu =</span> <span class="fu">c</span>(<span class="fl">2.92</span>,<span class="fl">3.11</span>,<span class="fl">3.36</span>,<span class="fl">4.04</span>,<span class="fl">4.35</span>), <span class="at">sd =</span> <span class="fu">sqrt</span>(<span class="fl">0.8</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-label="1"></a>power1 <span class="ot">=</span> Superpower<span class="sc">::</span><span class="fu">ANOVA_power</span>(anova1, <span class="at">alpha_level =</span> <span class="fl">0.05</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-label="2"></a>anova2 <span class="ot">=</span> Superpower<span class="sc">::</span><span class="fu">ANOVA_design</span>(<span class="at">design =</span> <span class="st">"5b"</span>, <span class="at">n =</span> n<span class="sc">*</span><span class="dv">2</span>, <span class="at">mu =</span> <span class="fu">c</span>(<span class="fl">2.92</span>,<span class="fl">3.11</span>,<span class="fl">3.36</span>,<span class="fl">4.04</span>,<span class="fl">4.35</span>), <span class="at">sd =</span> <span class="fu">sqrt</span>(<span class="fl">0.8</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-label="1"></a>power2 <span class="ot">=</span> Superpower<span class="sc">::</span><span class="fu">ANOVA_power</span>(anova2, <span class="at">alpha_level =</span> <span class="fl">0.05</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-label="2"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-label="3"></a>stages <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Stage 0"</span>, <span class="st">"Stage 1"</span>, <span class="st">"Stage 2"</span>, <span class="st">"Stage 3"</span>, <span class="st">"Stage 4"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-label="4"></a>comparisons <span class="ot">=</span> <span class="fu">rep</span>(<span class="st">""</span>, <span class="dv">10</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-label="5"></a>index <span class="ot">=</span> <span class="dv">1</span>;</span>
+<span id="cb8-6"><a href="#cb8-6" aria-label="6"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(<span class="fu">length</span>(stages)<span class="sc">-</span><span class="dv">1</span>)){</span>
+<span id="cb8-7"><a href="#cb8-7" aria-label="7"></a>  <span class="cf">for</span>(k <span class="cf">in</span> (i<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(stages)){</span>
+<span id="cb8-8"><a href="#cb8-8" aria-label="8"></a>    comparisons[index] <span class="ot">=</span> <span class="fu">paste</span>(stages[i], stages[k], <span class="at">sep =</span> <span class="st">" vs "</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-label="9"></a>    index <span class="ot">=</span> index <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-label="10"></a>  }</span>
+<span id="cb8-11"><a href="#cb8-11" aria-label="11"></a>}</span>
+<span id="cb8-12"><a href="#cb8-12" aria-label="12"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-label="13"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-label="14"></a>comp.dat <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">Comparison =</span> comparisons, <span class="at">Original =</span> power1<span class="sc">$</span>pc_results<span class="sc">$</span>power, <span class="at">Double =</span> power2<span class="sc">$</span>pc_results<span class="sc">$</span>power)<span class="sc">|&gt;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-label="15"></a>  <span class="fu">add_row</span>(<span class="at">Comparison =</span> <span class="st">"Overall"</span>, <span class="at">Original =</span> power1<span class="sc">$</span>main_results<span class="sc">$</span>power, <span class="at">Double =</span> power2<span class="sc">$</span>main_results<span class="sc">$</span>power, <span class="at">.before =</span> <span class="dv">1</span>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-label="16"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-label="17"></a>underpowered <span class="ot">=</span> comp.dat <span class="sc">|&gt;</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-label="18"></a>  <span class="fu">filter</span>(Original <span class="sc">&lt;</span> <span class="dv">80</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Comparison</th>
+<th style="text-align: right;">Original</th>
+<th style="text-align: right;">Double</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Stage 0 vs Stage 1</td>
+<td style="text-align: right;"><span class="math inline">\(12.2\%\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(22.4\%\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Stage 0 vs Stage 2</td>
+<td style="text-align: right;"><span class="math inline">\(48.9\%\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(79.2\%\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Stage 1 vs Stage 2</td>
+<td style="text-align: right;"><span class="math inline">\(20.4\%\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(34.9\%\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Stage 3 vs Stage 4</td>
+<td style="text-align: right;"><span class="math inline">\(27.3\%\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(47.6\%\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Using <code>Superpower::ANOVA_design()</code> and <code>Superpower::ANOVA_power()</code>, I calculated the power of each comparison for both <span class="math inline">\(n=30\)</span> (the original sample size) and <span class="math inline">\(n=60\)</span> (double sample size). In the table above are the comparisons where <span class="math inline">\(\text{power} &lt; 80\%\)</span> for the , all other comparisons had sufficient power. As shown in the table above, all four comparisons that were underpowered at <span class="math inline">\(n=30\)</span> are still underpowered at <span class="math inline">\(n=60\)</span>.</p>
 </section>
 </section>
 <section id="question-3-an-application" class="level1">
@@ -619,22 +738,157 @@ Table&nbsp;1: <span class="math inline">\(\text{SUV}_{\text{max}}\)</span> measu
 <section id="part-a-2" class="level2">
 <h2 class="anchored" data-anchor-id="part-a-2">Part a</h2>
 <p>State the null (<span class="math inline">\(H_0\)</span>) and alternative (<span class="math inline">\(H_a\)</span>) hypotheses for the omnibus test.</p>
+<p><span class="math display">\[
+H_0 : \mu_{2M} = \mu_{6M} = \mu_{16M} = \mu_{16M,\textit{ treatment}} \\
+H_a : \text{Atleast one mean differs}
+\]</span></p>
 </section>
 <section id="part-b-2" class="level2">
 <h2 class="anchored" data-anchor-id="part-b-2">Part b</h2>
 <p>Perform some exploratory data analysis to provide empirical information about the researchers question.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Group</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">16M, Treatment</td>
+<td style="text-align: right;">3.19</td>
+<td style="text-align: right;">1.29</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">16M</td>
+<td style="text-align: right;">7.57</td>
+<td style="text-align: right;">0.62</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">6M</td>
+<td style="text-align: right;">4.09</td>
+<td style="text-align: right;">0.39</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2M</td>
+<td style="text-align: right;">1.36</td>
+<td style="text-align: right;">0.10</td>
+</tr>
+</tbody>
+</table>
+<p>The table above shows the means and standard deviations of each group. Empirically it seems as if groups 2M, 6M, and 16M are not within <span class="math inline">\(2\)</span> standard deviations of eachother, so there may be a significant difference in <span class="math inline">\(\text{SUV}_{\text{max}}\)</span> across age groups. The treatment group, however, has much higher variability so it is less certain wether the treatment makes a difference.</p>
 </section>
 <section id="part-c-1" class="level2">
 <h2 class="anchored" data-anchor-id="part-c-1">Part c</h2>
 <p>Perform and report the results of the omnibus test. Make sure to evaluate the conditions for using the method you choose.</p>
+<p>For this data it makes sense to do an ANOVA test. The conditions for this test are independence, normality, and similar variances. This data meets the independence condition as the reseacrhers made sure their observations across groups were independent. The normality and similar variances assumptions are not met however, as the sample size for each group is only <span class="math inline">\(n = 3\)</span>, and the variances are dissimilar. ANOVA is robust to these assumptions so I feel comfortable running the test anyways.</p>
+<p></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-label="1"></a>mouse.dat <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">Replicate =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="st">`</span><span class="at">2M</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">1.48969</span>, <span class="fl">1.30168</span>, <span class="fl">1.30620</span>), </span>
+<span id="cb9-2"><a href="#cb9-2" aria-label="2"></a>                   <span class="st">`</span><span class="at">6M</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">4.36000</span>, <span class="fl">4.28807</span>, <span class="fl">3.64184</span>), <span class="st">`</span><span class="at">16M</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">7.30182</span>, <span class="fl">7.12416</span>, <span class="fl">8.28764</span>),</span>
+<span id="cb9-3"><a href="#cb9-3" aria-label="3"></a>                    <span class="at">Treatment =</span> <span class="fu">c</span>(<span class="fl">4.69304</span>, <span class="fl">2.51326</span>, <span class="fl">2.38019</span>))</span>
+<span id="cb9-4"><a href="#cb9-4" aria-label="4"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-label="5"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-label="6"></a>mouse.long <span class="ot">=</span> mouse.dat <span class="sc">|&gt;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-label="7"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="sc">-</span>Replicate, <span class="at">names_to =</span> <span class="st">"Group"</span>, <span class="at">values_to =</span> <span class="st">"Value"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-label="8"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-label="9"></a>mouse.summary <span class="ot">=</span> mouse.long <span class="sc">|&gt;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-label="10"></a>  <span class="fu">group_by</span>(Group) <span class="sc">|&gt;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-label="11"></a>  <span class="fu">summarise</span>(<span class="at">mean =</span> <span class="fu">mean</span>(Value), <span class="at">sd =</span> <span class="fu">sd</span>(Value))</span>
+<span id="cb9-12"><a href="#cb9-12" aria-label="12"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-label="13"></a>anova.dat <span class="ot">=</span> rstatix<span class="sc">::</span><span class="fu">anova_test</span>(mouse.long, Value <span class="sc">~</span> Group)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p></p>
+<p>After organizing the data and using the <code>rstatix::anova_test()</code> function, the F-value for the data was <span class="math inline">\(36.198\)</span> and the p value was <span class="math inline">\(&lt; 0.0001\)</span>. This tells us that there if we assume the null hypothesis to be true, the probability that we get the data we got is less than <span class="math inline">\(0.01\%\)</span>. From the results of this test it can be concluded that there is statistically discernable support that the mean <span class="math inline">\(\text{SUV}_{\text{max}}\)</span> across age groups in mice are not the same.</p>
 </section>
 <section id="part-d-1" class="level2">
 <h2 class="anchored" data-anchor-id="part-d-1">Part d</h2>
 <p>Conduct post-hoc pairwise comparisons to determine if age-induced inflammatory glucose hypermetabolism increase with age and whether low-dose nicotine reduces age-induced inflammatory glucose hypermetabolism.</p>
+<p>The previous test told us there is a difference among the means but it does not tell us how much of a difference, or where the it is. In order to see where the differences lie and how significant they are, I used <code>rstatix::tukey_hsd</code> to run a pairwise comparison test on all the groups.</p>
+<p></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-label="1"></a>pairwise.test <span class="ot">=</span> rstatix<span class="sc">::</span><span class="fu">tukey_hsd</span>(mouse.long, Value <span class="sc">~</span> Group)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-label="2"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-label="3"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-label="4"></a>power.design <span class="ot">=</span> Superpower<span class="sc">::</span><span class="fu">ANOVA_design</span>(<span class="st">"4b"</span>, <span class="dv">3</span>, mouse.summary<span class="sc">$</span>mean, mouse.summary<span class="sc">$</span>sd)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-label="1"></a>power.results <span class="ot">=</span> Superpower<span class="sc">::</span><span class="fu">ANOVA_power</span>(power.design, <span class="at">alpha_level =</span> <span class="fl">0.05</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-label="2"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-label="3"></a>stages <span class="ot">=</span> mouse.summary<span class="sc">$</span>Group</span>
+<span id="cb11-4"><a href="#cb11-4" aria-label="4"></a>comparisons <span class="ot">=</span> <span class="fu">rep</span>(<span class="st">""</span>, <span class="dv">6</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-label="5"></a>index <span class="ot">=</span> <span class="dv">1</span>;</span>
+<span id="cb11-6"><a href="#cb11-6" aria-label="6"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(<span class="fu">length</span>(stages)<span class="sc">-</span><span class="dv">1</span>)){</span>
+<span id="cb11-7"><a href="#cb11-7" aria-label="7"></a>  <span class="cf">for</span>(k <span class="cf">in</span> (i<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(stages)){</span>
+<span id="cb11-8"><a href="#cb11-8" aria-label="8"></a>    comparisons[index] <span class="ot">=</span> <span class="fu">paste</span>(stages[i], stages[k], <span class="at">sep =</span> <span class="st">" vs "</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-label="9"></a>    index <span class="ot">=</span> index <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-label="10"></a>  }</span>
+<span id="cb11-11"><a href="#cb11-11" aria-label="11"></a>}</span>
+<span id="cb11-12"><a href="#cb11-12" aria-label="12"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-label="13"></a>overall.results <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">Comparisons =</span> comparisons, <span class="at">pvalue =</span> <span class="fu">paste0</span>(pairwise.test<span class="sc">$</span>p.adj<span class="sc">*</span><span class="dv">100</span>, <span class="st">"%"</span>), <span class="at">power =</span> <span class="fu">paste0</span>(power.results<span class="sc">$</span>pc_results<span class="sc">$</span>power, <span class="st">"%"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p></p>
+<p></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Comparisons</th>
+<th style="text-align: left;">pvalue</th>
+<th style="text-align: left;">power</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">16M vs 2M</td>
+<td style="text-align: left;">0.00357%</td>
+<td style="text-align: left;">100%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">16M vs 6M</td>
+<td style="text-align: left;">0.208%</td>
+<td style="text-align: left;">100%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">16M vs Treatment</td>
+<td style="text-align: left;">0.0444%</td>
+<td style="text-align: left;">95.8%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2M vs 6M</td>
+<td style="text-align: left;">0.907%</td>
+<td style="text-align: left;">100%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2M vs Treatment</td>
+<td style="text-align: left;">6.75%</td>
+<td style="text-align: left;">52.6%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">6M vs Treatment</td>
+<td style="text-align: left;">49.4%</td>
+<td style="text-align: left;">19.6%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p></p>
+<p>In addition to running the pairwise tests, I also used <code>Superpower::ANOVA_design()</code> and <code>Superpower::ANOVA_power()</code> to do a power analysis on our tests. As shown in the table above, there is statistically discernible support a difference between the 16M group and all other age groups along with treatment, and a difference between 2M and 6M. These tests also all have sufficient power. There is not support for a difference between 2M vs.&nbsp;treatment and 6M vs.&nbsp;treatment.</p>
 </section>
 <section id="part-e" class="level2">
 <h2 class="anchored" data-anchor-id="part-e">Part e</h2>
 <p>Write a short paragraph directly addressing the researcher’s hypothesis using your work in (a)-(d).</p>
+<p>The researchers hypothesized that low doses of nicotine could counteract age-related metabolic decline. To measure this they looked at age-induced inflammatory glucose hypermetabolism (<span class="math inline">\(\text{SUV}_{\text{max}}\)</span>). Their data met the conditions for an ANOVA test, and the results of the test showed that there is a difference in the means of <span class="math inline">\(\text{SUV}_{\text{max}}\)</span> in different age groups of mice and the treatment group. The second post-hoc test, a pairwise test among groups, revealed that there is a significant difference between <span class="math inline">\(\text{SUV}_{\text{max}}\)</span> levels among age groups 2M, 6M, and 16M. Since these comparisons yielded a p-value less than <span class="math inline">\(0.05\)</span> and had power greater than <span class="math inline">\(0.80\)</span>, we can conclude that <span class="math inline">\(\text{SUV}_{\text{max}}\)</span> increases with age. The only other pairwise test that was statistically significant was 16M vs treatment. This shows that among the population of mice treated with nicotine, the average <span class="math inline">\(\text{SUV}_{\text{max}}\)</span> at 16 months is lower than the average of mice not treated with nicotine at 16 months. These results provide support for the researchers hypothesis.</p>
 
 
 
