@@ -44,6 +44,8 @@ website:
             href: Math354/HW1/Hw1.qmd
           - text: "HW 2: k Sample Inference"
             href: Math354/HW2/HW2.qmd
+          - text: "HW 3: Regression"
+            href: Math354/HW3/HW3.qmd
 
 
   page-footer: 

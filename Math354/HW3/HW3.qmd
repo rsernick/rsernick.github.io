@@ -1,0 +1,494 @@
+---
+title: Homework 3 -- Regression # Title of the document
+
+# Bibliography Details
+bibliography: HW3References.bib  # Name of bib file in the same folder 
+bibliographystyle: apa            # Bibliography style
+
+execute:               # Default settings for code blocks
+  warning: false       # Do not print warnings
+  message: false       # Do not print messages
+  size: "scriptsize"   # Set code size to script size
+
+# Below will do html by default. To render the entire project
+# Use the following code:
+# quarto::quarto_render("HW3.qmd")
+format:
+  pdf:        # Specify .pdf formatting options 
+    documentclass: article     # Document Class
+    number-sections: true      # Number Sections
+    reference-section-title: "References" # Title for reference section
+    code-line-numbers: true    # Line numbers printed in code
+    cap-location: top          # Captions at the top of tables 
+    geometry:
+      - top=0.75in
+      - left=0.75in
+      - bottom=0.75in
+      - right=0.75in
+  html:       # Specify HTML formatting options 
+    number-sections: true      # Number Sections
+    code-fold: true            # Button to show code
+    code-line-numbers: true    # Line numbers printed in code
+    cap-location: top          # Captions at the top of tables and figures
+format-links: [pdf]
+---
+```{r}
+#| echo: false
+
+default_chunk_hook  <- knitr::knit_hooks$get("chunk")
+
+latex_font_size <- c("Huge", "huge", "LARGE", "Large", 
+                     "large", "normalsize", "small", 
+                     "footnotesize", "scriptsize", "tiny")
+
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- default_chunk_hook(x, options)
+  if(options$size %in% latex_font_size) {
+    paste0("\n \\", options$size, "\n\n", 
+      x, 
+      "\n\n \\normalsize"
+    )
+  } else {
+    x
+  }
+})
+```
+
+```{r}
+#| label: load-packages
+#| include: false
+library(tidyverse)
+library(patchwork)
+source("plotResiduals.R")
+source("plotInfluence.R")
+```
+
+# Question 1
+
+Below, I simulate a rather quite annoying set of regression data.
+```{r}
+#| size: "scriptsize"
+set.seed(0510)
+n <- 250
+dat.q1 <- tibble(x1 = rnorm(n, mean = 50, sd = 10),
+                 x2 = factor(sample(c("A", "B"), n, replace = TRUE)),
+                 x3 = factor(sample(c("Control", "Treat"), n, replace = TRUE)),
+                 x4 = factor(sample(c("Low", "High"), n, replace = TRUE), levels=c("Low", "High")),
+                 x5 = rnorm(n, mean = 0, sd = 1),
+                 x6 = factor(sample(c("Group1", "Group2"), n, replace = TRUE)),
+                 x7 = rnorm(n, mean = 10, sd = 2),
+                 x8 = rnorm(n, mean = 10, sd = 2)) |>
+        mutate(y = 5 +                          # Intercept
+                   # Quantiative x1
+                   2 * x1 +
+                   # Categorical x2
+                   (x2 == "B") * 10 +
+                   # Categorical x Categorical (x3*x4)
+                   (x3 == "Treat") * 5 + (x4 == "High") * 2 + 
+                   (x3 == "Treat" & x4 == "High") * 15 +
+                   # Quantitative x Categorical  (x5*x6)
+                   3 * x5 + (x6 == "Group2") * 4 + 
+                   (x5 * (x6 == "Group2")) * 8 + 
+                   # Quantitative x Quantitative (x7*x8)
+                   1.5 * x7 + 0.5 * x8 + 
+                   0.8 * (x7 * x8) + 
+                   # Error
+                   rnorm(n, mean = 0, sd = 15))
+```
+
+## Part a
+
+Fit the regression model.
+
+\begin{align*}
+  Y_i =& \beta_0  +
+       \beta_1 x_{1i} + \beta_2 I(x_{2i}=\text{B})+ \beta_3 I(x_{3i}=\text{Treat}) + \beta_4 I(x_{4i}=\text{High}) +\\
+       & \beta_5 x_{5i} + \beta_6 I( x_{6i}=\text{Group2}) + \beta_7 x_{7i} + \beta_8 x_{8i}+\\
+       & \beta_9 (I(x_{3i}=\text{Treat}) ~\times~ I(x_{4i}=\text{High})) + \tag{Categorical $\times$ Categorical}\\
+        & \beta_{10} (x_{5i} ~\times~ I(x_{6i}=\text{Group2})) +\tag{Continuous $\times$ Categorical}\\
+        & \beta_{11} (x_{7i} ~\times~ x_{8i}) +
+         \epsilon_i \tag{Continuous $\times$ Continuous}
+\end{align*}
+
+**Solution:** First, we fit the regression model using `lm()`.
+```{r}
+#| size: "scriptsize"
+mod.q1 <- lm(y ~ x1 + x2 + x3*x4 + x5*x6 + x7*x8, data=dat.q1)
+```
+
+## Part b
+Conduct a residual and outlier analysis.
+
+```{r}
+plotResiduals(mod.q1)
+```
+
+Using `plotResiduals()` from the included \textit{plotResiduals.r} file, I can see that the residuals seem to follow a normal distribution and there are few outliers (only two). Additionally the residual plot on the right shows constant variance across the fitted values and the residuals are centered around $0$.
+
+## Part c
+Interpret the intercept, the coefficients on $x_1$ and $x_2$.
+
+```{r}
+knitr::kable(mod.q1$coefficients[1:3])
+```
+
+The intercept (`{r} round(as.numeric(mod.q1$coefficients[1]), 2)`) is the predicted value of the dependent variable if all of the dependent variables are 0. $x_1$ is a continuous value so the coefficient for $x_1$ (`{r} round(as.numeric(mod.q1$coefficients[2]), 2)`) is how much the predicted value of the dependent variable changes when $x_1$ changes and all other independent variables are held constant. So in this case if all dependent variables are held constant and $x_1$ is increased by $1$ then $\hat{y}$ increases by (`{r} round(as.numeric(mod.q1$coefficients[2]), 2)`). $x_2$, however, is a categorical value so the interpretation of its coefficient is different. There are only two possible values of $x_2$ 'A' or 'B', and the variable in the regression model is labeled $x_2B$. This tells us that when $x_2$ is 'A' $x_2B = 0$ and when $x_2$ is 'B' $x_2B = 1$, so when $x_2$ is 'A' $\hat{y}$ does not change but when $x_2$ is 'B' $\hat{y}$ increases by `{r} round(as.numeric(mod.q1$coefficients[3]), 2)`.
+
+## Part d
+Untangle and interpret the $x_3*x_4$ interaction using algebra. Use @tbl-q1d-emmeans and @fig-q1d-emmeans for context.
+
+```{r}
+#| size: "scriptsize"
+library(emmeans)
+emm.q1d <- emmeans(mod.q1, ~x3*x4) |> # Don't average across levels: use |x2*x6
+            data.frame() |>
+            rename("Mean"  = "emmean",
+                   "Lower" = "lower.CL",
+                   "Upper" = "upper.CL")
+```
+
+```{r}
+#| label: tbl-q1d-emmeans
+#| tbl-cap: "Estimated marginal means for the model in Question 1."
+#| tbl-align: "center"
+#| echo: false
+emm.q1d |> 
+  knitr::kable(digits = 4)
+```
+
+```{r}
+#| label: fig-q1d-emmeans
+#| fig-cap: "Estimated marginal means for the model in Question 1."
+#| fig-width: 5
+#| fig-height: 3
+#| fig-align: "center"
+#| size: "scriptsize"
+emm.q1d <- emm.q1d |>
+  mutate(Observation = paste("(x3=", x3, ", ", "x4=", x4, ")", sep=""))
+ggplot(emm.q1d) + 
+  geom_point(aes(x=Mean, y=Observation))+
+  geom_errorbar(aes(y=Observation,
+                    xmin=Lower, xmax=Upper),
+                width = 0.25)+
+  # facet_wrap(~x2*x6)+
+  theme_bw()+
+  xlab("Estimated Mean of Y")
+```
+
+## Part e
+Untangle and interpret the $x_5*x_6$ interaction using algebra. Use @tbl-q1e-emtrends and @fig-q1e-emtrends for context.
+
+```{r}
+#| size: "scriptsize"
+emm.q1e <- emtrends(mod.q1, var="x5", ~x5|x6) |> 
+            data.frame() |>
+            rename("Slope"  = "x5.trend",
+                   "Lower" = "lower.CL",
+                   "Upper" = "upper.CL") |>
+            dplyr::select(x6, Slope, SE, df, Lower, Upper)
+```
+```{r}
+#| label: tbl-q1e-emtrends
+#| tbl-cap: "Estimated marginal trends for the model in Question 1."
+#| tbl-align: "center"
+#| echo: false
+emm.q1e |> 
+  knitr::kable(digits = 4)
+```
+In @fig-q1e-emtrends, the slopes are the same and just the intercepts vary depending on $x_2$, $x_3$, and $x_4$.
+```{r}
+#| label: fig-q1e-emtrends
+#| fig-cap: "Estimated marginal trends for the model in Question 1."
+#| fig-width: 5
+#| fig-height: 3
+#| fig-align: "center"
+#| size: "scriptsize"
+emm.q1e <- emmeans(mod.q1, ~x5*x6,
+                    at = list(x5 = seq(-3, 3, length.out=500))) |> # Don't average across levels: use |x2*x3*x4
+  data.frame() |>
+            rename("Mean"  = "emmean",
+                   "Lower" = "lower.CL",
+                   "Upper" = "upper.CL")
+
+ggplot(emm.q1e) + 
+  geom_line(aes(x=x5, y=Mean, color=x6))+
+  geom_ribbon(aes(x=x5, ymin=Lower, ymax=Upper, fill=x6), alpha=0.25)+
+  # facet_wrap(~x2*x3*x4)+
+  theme_bw()
+```
+
+
+## Part f
+Untangle and interpret the $x_7*x_8$ interaction using algebra. Use @tbl-q1f-emtrends-x7 and @tbl-q1f-emtrends-x8 for context.
+
+
+
+```{r}
+#| size: "scriptsize"
+emm.q1f.x7 <- emtrends(mod.q1, var="x7", ~x7|x8, 
+                    at = list(x8 = mean(dat.q1$x8) + c(-1, 0 ,1)*sd(dat.q1$x8))) |> 
+            data.frame() |>
+            rename("Slope"  = "x7.trend",
+                   "Lower" = "lower.CL",
+                   "Upper" = "upper.CL") |>
+            dplyr::select(x8, Slope, SE, df, Lower, Upper)
+```
+```{r}
+#| label: tbl-q1f-emtrends-x7
+#| tbl-cap: "Estimated marginal trends for the model in Question 1."
+#| tbl-align: "center"
+#| echo: false
+emm.q1f.x7 |> 
+  knitr::kable(digits = 4)
+```
+
+```{r}
+#| size: "scriptsize"
+emm.q1f.x8 <- emtrends(mod.q1, var="x8", ~x8|x7, 
+                    at = list(x7 = mean(dat.q1$x7) + c(-1, 0 ,1)*sd(dat.q1$x7))) |> 
+            data.frame() |>
+            rename("Slope"  = "x8.trend",
+                   "Lower" = "lower.CL",
+                   "Upper" = "upper.CL") |>
+            dplyr::select(x7, Slope, SE, df, Lower, Upper)
+```
+```{r}
+#| label: tbl-q1f-emtrends-x8
+#| tbl-cap: "Estimated marginal trends for the model in Question 1."
+#| tbl-align: "center"
+#| echo: false
+emm.q1f.x8 |> 
+  knitr::kable(digits = 4)
+```
+
+A Johnson Neyman analysis using the `interactions` package for `R` [@interactions], shows that the slope of $x_7$ is statistically discernible for all observed values of $x_8$ (@fig-q1f-jni-x7), and vice versa (@fig-q1f-jni-x8).
+
+```{r}
+#| label: fig-q1f-jni-x7
+#| fig-cap: "Johnson Neyman interval for the model in Question 1."
+#| fig-width: 5
+#| fig-height: 3.5
+#| fig-align: "center"
+#| size: "scriptsize"
+library(interactions)
+johnson_neyman(mod.q1, pred = x7, modx = x8, control.fdr = T)
+```
+
+```{r}
+#| label: fig-q1f-jni-x8
+#| fig-cap: "Johnson Neyman interval for the model in Question 1."
+#| fig-width: 5
+#| fig-height: 3.5
+#| fig-align: "center"
+#| size: "scriptsize"
+johnson_neyman(mod.q1, pred = x8, modx = x7, control.fdr = T)
+```
+
+## Part g
+Standardize the continuous data and refit the regression model. Redo part f. What do you notice about the coefficient estimates and why does this make the untangling process easier? 
+
+**Solution:** First, we fit the regression model using `lm()`.
+```{r}
+#| size: "scriptsize"
+# Standardize Data
+dat.z <- dat.q1 |>
+  mutate(across(c(x1, x5, x7, x8), ~ as.vector(scale(.))))
+# Refit Model
+mod.q1z <- lm(y ~ x1 + x2 + x3*x4 + x5*x6 + x7*x8, data=dat.z)
+```
+
+```{r}
+#| size: "scriptsize"
+emm.q1g.z7 <- emtrends(mod.q1z, var="x7", ~x7|x8,
+                    at = list(x8 = c(-1, 0 ,1))) |>
+          data.frame() |>
+          rename("Slope"  = "x7.trend",
+                 "Lower" = "lower.CL",
+                 "Upper" = "upper.CL") |>
+          dplyr::select(x8, Slope, SE, df, Lower, Upper)
+```
+```{r}
+#| label: tbl-q1-emtrends-z7
+#| tbl-cap: "Estimated marginal trends for the model in Question 1 when quantitative variables are standardized."
+#| tbl-align: "center"
+#| echo: false
+emm.q1g.z7 |> 
+          knitr::kable(digits = 2, row.names = F)
+```
+```{r}
+#| size: "scriptsize"
+emm.q1g.z8 <- emtrends(mod.q1z, var="x8", ~x8|x7,
+                      at = list(x7 = c(-1, 0 ,1)))|>
+              data.frame() |>
+              rename("Slope"  = "x8.trend",
+                    "Lower" = "lower.CL",
+                    "Upper" = "upper.CL") |>
+              dplyr::select(x7, Slope, SE, df, Lower, Upper)
+
+```
+```{r}
+#| label: tbl-q1-emtrends-z8
+#| tbl-cap: "Estimated marginal trends for the model in Question 1 when quantitative variables are standardized."
+#| tbl-align: "center"
+#| echo: false
+emm.q1g.z8 |> 
+          knitr::kable(digits = 2, row.names = F)
+```
+
+# Question 2
+@Cui25 investigate how freezing and cryogenic temperatures affect the strength, flexibility, stiffness, and internal breaking behavior of 3D-printed CF/PEEK composites.
+
+Carbon fiber reinforced PEEK (CF/PEEK) is a high-performance composite used in 3D printing for aerospace, deep-sea, polar research. The researchers aimed to assess whether and how extremely cold environments impact this composite to understand how 3D-printed CF/PEEK performs in freezing conditions. This work would be important to understand its limits and develop preventative methods to protect against structural failures.
+
+The researchers created fifteen 3D printed dog-bone-shaped test specimens and placed them in a chamber cooled with liquid nitrogen to $25^\circ\text{C}$, $-25^\circ\text{C}$, $-75^\circ\text{C}$, $-125^\circ\text{C}$, and $-175^\circ\text{C}$. To test strength of the specimen, a machine pulled both ends of the specimen until it snapped. 
+
+In the table below, the researchers record the average tensile strength for three specimens from each temperature level.
+
+| Temperature          | Mean Tensile Strength | 
+| :--                  | :--                   |
+| $25^\circ\text{C}$   | 81.93 MPa             |
+| $-25^\circ\text{C}$  | 76.63 MPa             |
+| $-75^\circ\text{C}$  | 63.23 MPa             |
+| $-125^\circ\text{C}$ | 32.13 MPa             |
+| $-175^\circ\text{C}$ | 12.83 MPa             |
+
+## Part a
+Compute the estimates we derived using calculus in lecture 16: 
+\begin{align*} 
+\widehat{\beta}_0 &= \bar{y} - \widehat{\beta}_1 \bar{x}_1 \\ 
+\widehat{\beta}_1 &= \frac{\sum_{i=1}^n (x_{1i} - \bar{x}_1)(y_i-\bar{y})}{\sum_{i=1}^n (x_{1i}-\bar{x}_1)^2}.
+\end{align*}
+
+```{r}
+dat.q2 = tibble(Temperature = c(25, -25, -75, -125, -175), Strength = c(81.93, 76.63, 63.23, 32.13, 12.83))
+sum1 = 0
+sum2 = 0
+xbar = mean(dat.q2$Temperature)
+ybar = mean(dat.q2$Strength)
+for(i in 1:length(dat.q2$Temperature)){
+  sum1 = sum1 + ((dat.q2$Temperature[i] - xbar)*(dat.q2$Strength[i] - ybar))
+  sum2 = sum2 + (dat.q2$Temperature[i] - xbar)^2
+}
+b1 = sum1/sum2
+b0 = ybar - b1*xbar
+dat.regression = tibble(method = "Calculus", b_0 = b0, b_1 = b1)
+```
+
+Using the calculus approach the regression model we get is $y = `{r} b0` + `{r} b1`x_1$.
+
+## Part b
+Compute the estimates we derived using linear algebra in lecture 16: 
+$$\widehat{\boldsymbol{\beta}} = \left(\mathbf{X}'\mathbf{X}\right)^{-1} \mathbf{X}'\mathbf{Y}.$$
+**Hint:** Run `?matrix()` in `R` for a quick reminder about how to create a matrix. 
+
+```{r}
+X = matrix(c(rep(1, 5), dat.q2$Temperature), nrow = 5, ncol = 2)
+Y = matrix(dat.q2$Strength)
+
+Bhat = solve(t(X)%*%X)%*%t(X)%*%Y
+dat.regression = dat.regression |>
+  add_row(method = "Linear Algebra", b_0 = Bhat[1], b_1 = Bhat[2])
+```
+
+Using the Linear Algebra approach the regression model we get is $y = `{r}Bhat[1]` + `{r} Bhat[2]`x_1$.
+
+## Part c
+Compute the maximum likelihood estimates using `optim()` in `R` as described in lecture 16:
+$$\max_{\beta_0, \beta_1, \sigma} \mathcal{L}(\boldsymbol{\theta}=\{\beta_0, \beta_1, \sigma\}).$$
+
+```{r}
+y = dat.q2$Strength
+x = dat.q2$Temperature
+n = length(y)
+
+ll_theta = function(args){
+  b0 = args[1]
+  b1 = args[2]
+  sd = args[3]
+  sum = 0
+  for(i in 1:n){
+    sum = sum + ((y[i]-(b0+b1*x[i]))^2)/(2*sd^2)
+  }
+  theta = -((-n/2)*log(2*pi)-(n/2)*log(sd^2)-sum)
+}
+
+theta = optim(c(78, 0.5, 1), ll_theta)
+dat.regression = dat.regression |>
+  add_row(method = "Log Likliehood", b_0 = theta$par[1], b_1 = theta$par[2])
+```
+
+Using the log likliehood method the computed regression is $y = `{r} theta$par[1]` + `{r} theta$par[2]`x_1$
+
+## Part d
+Fit the model using `lm()` and plot the resulting model. Compare to the results from parts (a) through (c). 
+
+```{r}
+reg = lm(Strength ~ Temperature, dat.q2)
+dat.regression = dat.regression |>
+  add_row(method = "`lm()`", b_0 = reg$coefficients[1], b_1 = reg$coefficients[2])
+knitr::kable(dat.regression)
+```
+
+Comparing the results in the table above, all methods are the same except for the log likliehood estimation. This makes sense because the calculus and linear algebra approaches are exact methods for calculating the regression coeffecients while the log likliehood method is an approximation using computational methods.
+
+# Question 3
+@Bracht16 evaluate MFAP4 as a biomarker for severity of fibrosis in hepatitic C patients. 
+
+```{r}
+#| size: "scriptsize"
+dat.mfap4 <- read_csv("Bracht2016.csv")
+```
+
+## Part a
+Fit the model predicting `MFAP4` using `Fibrosis.Stage`. Write out the resulting estimate model and interpret the coefficients.
+
+## Part b
+Conduct a residual analysis on the model in part a to demonstrate how to identify when you need a log transformation.
+
+
+## Part c
+Fit the model predicting `log(MFAP4)` using `Fibrosis.Stage`. Use the natural log, and not the $\log_2(\cdot)$ recorded in the data file. Write out the resulting estimate model and interpret the coefficients.
+
+
+## Part d
+Conduct a residual analysis on the model in part c to demonstrate that the conditions for using regression are met.
+
+## Part e
+Fit the model predicting `log(MFAP4)` using `Fibrosis.Stage`, `Age`, and `Gender`. Use the natural log, and not the $\log_2(\cdot)$ recorded in the data file. Write out the resulting estimate model and interpret the coefficients.
+
+
+
+# Question 4
+
+## Part a
+Simulate data to match regression assumptions in a loop that runs $R=1000$ times.
+\begin{align*}
+    x_i &\sim \text{Uniform}(a=0,b=10)\\
+    \epsilon_i &\sim \text{Gaussian}(\mu=0, \sigma=1)\\
+    y_i &= 2 + 1.5 x_i + \epsilon_i\\
+    n &= 30
+\end{align*}
+In each iteration, fit a regression line to the data and store the coefficient estimates. Plot the resulting estimates. What do you notice?
+
+## Part b
+Simulate data to match regression assumptions in a loop that runs $R=1000$ times.
+\begin{align*}
+    x_i &\sim \text{Uniform}(a=0,b=10)\\
+    \epsilon_i &\sim \text{Shifted Exponential}(\lambda=1, \mu=0)\\
+    y_i &= 2 + 1.5 x_i + \epsilon_i\\
+    n &= 30
+\end{align*}
+In each iteration, fit a regression line to the data and store the coefficient estimates. Plot the resulting estimates. What do you notice?
+
+**Hint:** Use the `tolerance::r2exp()` function with `rate=1` and `shift=-1`.
+
+## Part c
+Simulate data to match regression assumptions in a loop that runs $R=1000$ times.
+\begin{align*}
+    x_i &\sim \text{Uniform}(a=0,b=10)\\
+    \epsilon_i &\sim \text{Cauchy}(m=0, s=1)\\
+    y_i &= 2 + 1.5 x_i + \epsilon_i\\
+    n &= 30
+\end{align*}
+In each iteration, fit a regression line to the data and store the coefficient estimates. Plot the resulting estimates. What do you notice?
+

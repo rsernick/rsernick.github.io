@@ -30,6 +30,265 @@
     ]
   },
   {
+    "objectID": "Math354/HW3/HW3.html#part-a",
+    "href": "Math354/HW3/HW3.html#part-a",
+    "title": "Homework 3 – Regression",
+    "section": "1.1 Part a",
+    "text": "1.1 Part a\nFit the regression model.\n\\[\\begin{align*}\n  Y_i =& \\beta_0  +\n       \\beta_1 x_{1i} + \\beta_2 I(x_{2i}=\\text{B})+ \\beta_3 I(x_{3i}=\\text{Treat}) + \\beta_4 I(x_{4i}=\\text{High}) +\\\\\n       & \\beta_5 x_{5i} + \\beta_6 I( x_{6i}=\\text{Group2}) + \\beta_7 x_{7i} + \\beta_8 x_{8i}+\\\\\n       & \\beta_9 (I(x_{3i}=\\text{Treat}) ~\\times~ I(x_{4i}=\\text{High})) + \\tag{Categorical $\\times$ Categorical}\\\\\n        & \\beta_{10} (x_{5i} ~\\times~ I(x_{6i}=\\text{Group2})) +\\tag{Continuous $\\times$ Categorical}\\\\\n        & \\beta_{11} (x_{7i} ~\\times~ x_{8i}) +\n         \\epsilon_i \\tag{Continuous $\\times$ Continuous}\n\\end{align*}\\]\nSolution: First, we fit the regression model using lm().\n\n\n\nCode\nmod.q1 &lt;- lm(y ~ x1 + x2 + x3*x4 + x5*x6 + x7*x8, data=dat.q1)",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-b",
+    "href": "Math354/HW3/HW3.html#part-b",
+    "title": "Homework 3 – Regression",
+    "section": "1.2 Part b",
+    "text": "1.2 Part b\nConduct a residual and outlier analysis.\n\n\n\nCode\nplotResiduals(mod.q1)\n\n\n\n\n\n\n\n\n\n\nUsing plotResiduals() from the included file, I can see that the residuals seem to follow a normal distribution and there are few outliers (only two). Additionally the residual plot on the right shows constant variance across the fitted values and the residuals are centered around \\(0\\).",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-c",
+    "href": "Math354/HW3/HW3.html#part-c",
+    "title": "Homework 3 – Regression",
+    "section": "1.3 Part c",
+    "text": "1.3 Part c\nInterpret the intercept, the coefficients on \\(x_1\\) and \\(x_2\\).\n\n\n\nCode\nknitr::kable(mod.q1$coefficients[1:3])\n\n\n\n\n\n\nx\n\n\n\n\n(Intercept)\n8.896532\n\n\nx1\n2.135460\n\n\nx2B\n10.028512\n\n\n\n\n\n\nThe intercept (8.9) is the predicted value of the dependent variable if all of the dependent variables are 0. \\(x_1\\) is a continuous value so the coefficient for \\(x_1\\) (2.14) is how much the predicted value of the dependent variable changes when \\(x_1\\) changes and all other independent variables are held constant. So in this case if all dependent variables are held constant and \\(x_1\\) is increased by \\(1\\) then \\(\\hat{y}\\) increases by (2.14). \\(x_2\\), however, is a categorical value so the interpretation of its coefficient is different. There are only two possible values of \\(x_2\\) ‘A’ or ‘B’, and the variable in the regression model is labeled \\(x_2B\\). This tells us that when \\(x_2\\) is ‘A’ \\(x_2B = 0\\) and when \\(x_2\\) is ‘B’ \\(x_2B = 1\\), so when \\(x_2\\) is ‘A’ \\(\\hat{y}\\) does not change but when \\(x_2\\) is ‘B’ \\(\\hat{y}\\) increases by 10.03.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-d",
+    "href": "Math354/HW3/HW3.html#part-d",
+    "title": "Homework 3 – Regression",
+    "section": "1.4 Part d",
+    "text": "1.4 Part d\nUntangle and interpret the \\(x_3*x_4\\) interaction using algebra. Use Table 1 and Figure 1 for context.\n\n\n\nCode\nlibrary(emmeans)\nemm.q1d &lt;- emmeans(mod.q1, ~x3*x4) |&gt; # Don't average across levels: use |x2*x6\n            data.frame() |&gt;\n            rename(\"Mean\"  = \"emmean\",\n                   \"Lower\" = \"lower.CL\",\n                   \"Upper\" = \"upper.CL\")\n\n\n\n\n\n\n\n\nTable 1: Estimated marginal means for the model in Question 1.\n\n\n\n\n\n\nx3\nx4\nMean\nSE\ndf\nLower\nUpper\n\n\n\n\nControl\nLow\n212.9676\n1.7871\n238\n209.4470\n216.4882\n\n\nTreat\nLow\n219.4792\n1.9123\n238\n215.7120\n223.2464\n\n\nControl\nHigh\n216.4894\n1.7916\n238\n212.9601\n220.0188\n\n\nTreat\nHigh\n238.1930\n1.7631\n238\n234.7198\n241.6662\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nemm.q1d &lt;- emm.q1d |&gt;\n  mutate(Observation = paste(\"(x3=\", x3, \", \", \"x4=\", x4, \")\", sep=\"\"))\nggplot(emm.q1d) + \n  geom_point(aes(x=Mean, y=Observation))+\n  geom_errorbar(aes(y=Observation,\n                    xmin=Lower, xmax=Upper),\n                width = 0.25)+\n  # facet_wrap(~x2*x6)+\n  theme_bw()+\n  xlab(\"Estimated Mean of Y\")\n\n\n\n\n\nFigure 1: Estimated marginal means for the model in Question 1.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-e",
+    "href": "Math354/HW3/HW3.html#part-e",
+    "title": "Homework 3 – Regression",
+    "section": "1.5 Part e",
+    "text": "1.5 Part e\nUntangle and interpret the \\(x_5*x_6\\) interaction using algebra. Use Table 2 and Figure 2 for context.\n\n\n\nCode\nemm.q1e &lt;- emtrends(mod.q1, var=\"x5\", ~x5|x6) |&gt; \n            data.frame() |&gt;\n            rename(\"Slope\"  = \"x5.trend\",\n                   \"Lower\" = \"lower.CL\",\n                   \"Upper\" = \"upper.CL\") |&gt;\n            dplyr::select(x6, Slope, SE, df, Lower, Upper)\n\n\n\n\n\n\n\n\nTable 2: Estimated marginal trends for the model in Question 1.\n\n\n\n\n\n\nx6\nSlope\nSE\ndf\nLower\nUpper\n\n\n\n\nGroup1\n2.4835\n1.2942\n238\n-0.0660\n5.0330\n\n\nGroup2\n9.4309\n1.3367\n238\n6.7977\n12.0642\n\n\n\n\n\n\n\n\n In Figure 2, the slopes are the same and just the intercepts vary depending on \\(x_2\\), \\(x_3\\), and \\(x_4\\).\n\n\n\nCode\nemm.q1e &lt;- emmeans(mod.q1, ~x5*x6,\n                    at = list(x5 = seq(-3, 3, length.out=500))) |&gt; # Don't average across levels: use |x2*x3*x4\n  data.frame() |&gt;\n            rename(\"Mean\"  = \"emmean\",\n                   \"Lower\" = \"lower.CL\",\n                   \"Upper\" = \"upper.CL\")\n\nggplot(emm.q1e) + \n  geom_line(aes(x=x5, y=Mean, color=x6))+\n  geom_ribbon(aes(x=x5, ymin=Lower, ymax=Upper, fill=x6), alpha=0.25)+\n  # facet_wrap(~x2*x3*x4)+\n  theme_bw()\n\n\n\n\n\nFigure 2: Estimated marginal trends for the model in Question 1.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-f",
+    "href": "Math354/HW3/HW3.html#part-f",
+    "title": "Homework 3 – Regression",
+    "section": "1.6 Part f",
+    "text": "1.6 Part f\nUntangle and interpret the \\(x_7*x_8\\) interaction using algebra. Use Table 3 and Table 4 for context.\n\n\n\nCode\nemm.q1f.x7 &lt;- emtrends(mod.q1, var=\"x7\", ~x7|x8, \n                    at = list(x8 = mean(dat.q1$x8) + c(-1, 0 ,1)*sd(dat.q1$x8))) |&gt; \n            data.frame() |&gt;\n            rename(\"Slope\"  = \"x7.trend\",\n                   \"Lower\" = \"lower.CL\",\n                   \"Upper\" = \"upper.CL\") |&gt;\n            dplyr::select(x8, Slope, SE, df, Lower, Upper)\n\n\n\n\n\n\n\n\nTable 3: Estimated marginal trends for the model in Question 1.\n\n\n\n\n\n\nx8\nSlope\nSE\ndf\nLower\nUpper\n\n\n\n\n8.1309\n7.9230\n0.6751\n238\n6.5932\n9.2529\n\n\n10.0582\n9.7129\n0.5015\n238\n8.7250\n10.7008\n\n\n11.9854\n11.5027\n0.7396\n238\n10.0458\n12.9597\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nemm.q1f.x8 &lt;- emtrends(mod.q1, var=\"x8\", ~x8|x7, \n                    at = list(x7 = mean(dat.q1$x7) + c(-1, 0 ,1)*sd(dat.q1$x7))) |&gt; \n            data.frame() |&gt;\n            rename(\"Slope\"  = \"x8.trend\",\n                   \"Lower\" = \"lower.CL\",\n                   \"Upper\" = \"upper.CL\") |&gt;\n            dplyr::select(x7, Slope, SE, df, Lower, Upper)\n\n\n\n\n\n\n\n\nTable 4: Estimated marginal trends for the model in Question 1.\n\n\n\n\n\n\nx7\nSlope\nSE\ndf\nLower\nUpper\n\n\n\n\n8.3824\n6.8569\n0.6069\n238\n5.6613\n8.0525\n\n\n10.2208\n8.5643\n0.4744\n238\n7.6297\n9.4989\n\n\n12.0592\n10.2716\n0.7325\n238\n8.8286\n11.7146\n\n\n\n\n\n\n\n\n\nA Johnson Neyman analysis using the interactions package for R (Long 2024), shows that the slope of \\(x_7\\) is statistically discernible for all observed values of \\(x_8\\) (Figure 3), and vice versa (Figure 4).\n\n\n\nCode\nlibrary(interactions)\njohnson_neyman(mod.q1, pred = x7, modx = x8, control.fdr = T)\n\n\nJOHNSON-NEYMAN INTERVAL\n\nWhen x8 is OUTSIDE the interval [-13.08, 3.35], the slope of x7 is p &lt; .05.\n\nNote: The range of observed values of x8 is [4.69, 15.07]\n\nInterval calculated using false discovery rate adjusted t = 1.97 \n\n\n\n\n\nFigure 3: Johnson Neyman interval for the model in Question 1.\n\n\n\n\n\n\n\n\n\n\n\n\nCode\njohnson_neyman(mod.q1, pred = x8, modx = x7, control.fdr = T)\n\n\nJOHNSON-NEYMAN INTERVAL\n\nWhen x7 is OUTSIDE the interval [-9.96, 4.25], the slope of x8 is p &lt; .05.\n\nNote: The range of observed values of x7 is [4.89, 14.60]\n\nInterval calculated using false discovery rate adjusted t = 1.97 \n\n\n\n\n\nFigure 4: Johnson Neyman interval for the model in Question 1.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-g",
+    "href": "Math354/HW3/HW3.html#part-g",
+    "title": "Homework 3 – Regression",
+    "section": "1.7 Part g",
+    "text": "1.7 Part g\nStandardize the continuous data and refit the regression model. Redo part f. What do you notice about the coefficient estimates and why does this make the untangling process easier?\nSolution: First, we fit the regression model using lm().\n\n\n\nCode\n# Standardize Data\ndat.z &lt;- dat.q1 |&gt;\n  mutate(across(c(x1, x5, x7, x8), ~ as.vector(scale(.))))\n# Refit Model\nmod.q1z &lt;- lm(y ~ x1 + x2 + x3*x4 + x5*x6 + x7*x8, data=dat.z)\n\n\n\n\n\n\nCode\nemm.q1g.z7 &lt;- emtrends(mod.q1z, var=\"x7\", ~x7|x8,\n                    at = list(x8 = c(-1, 0 ,1))) |&gt;\n          data.frame() |&gt;\n          rename(\"Slope\"  = \"x7.trend\",\n                 \"Lower\" = \"lower.CL\",\n                 \"Upper\" = \"upper.CL\") |&gt;\n          dplyr::select(x8, Slope, SE, df, Lower, Upper)\n\n\n\n\n\n\n\n\nTable 5: Estimated marginal trends for the model in Question 1 when quantitative variables are standardized.\n\n\n\n\n\n\nx8\nSlope\nSE\ndf\nLower\nUpper\n\n\n\n\n-1\n14.57\n1.24\n238\n12.12\n17.01\n\n\n0\n17.86\n0.92\n238\n16.04\n19.67\n\n\n1\n21.15\n1.36\n238\n18.47\n23.83\n\n\n\n\n\n\n\n\n\n\n\n\nCode\nemm.q1g.z8 &lt;- emtrends(mod.q1z, var=\"x8\", ~x8|x7,\n                      at = list(x7 = c(-1, 0 ,1)))|&gt;\n              data.frame() |&gt;\n              rename(\"Slope\"  = \"x8.trend\",\n                    \"Lower\" = \"lower.CL\",\n                    \"Upper\" = \"upper.CL\") |&gt;\n              dplyr::select(x7, Slope, SE, df, Lower, Upper)\n\n\n\n\n\n\n\n\nTable 6: Estimated marginal trends for the model in Question 1 when quantitative variables are standardized.\n\n\n\n\n\n\nx7\nSlope\nSE\ndf\nLower\nUpper\n\n\n\n\n-1\n13.22\n1.17\n238\n10.91\n15.52\n\n\n0\n16.51\n0.91\n238\n14.70\n18.31\n\n\n1\n19.80\n1.41\n238\n17.01\n22.58",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-a-1",
+    "href": "Math354/HW3/HW3.html#part-a-1",
+    "title": "Homework 3 – Regression",
+    "section": "2.1 Part a",
+    "text": "2.1 Part a\nCompute the estimates we derived using calculus in lecture 16: \\[\\begin{align*}\n\\widehat{\\beta}_0 &= \\bar{y} - \\widehat{\\beta}_1 \\bar{x}_1 \\\\\n\\widehat{\\beta}_1 &= \\frac{\\sum_{i=1}^n (x_{1i} - \\bar{x}_1)(y_i-\\bar{y})}{\\sum_{i=1}^n (x_{1i}-\\bar{x}_1)^2}.\n\\end{align*}\\]\n\n\n\nCode\ndat.q2 = tibble(Temperature = c(25, -25, -75, -125, -175), Strength = c(81.93, 76.63, 63.23, 32.13, 12.83))\nsum1 = 0\nsum2 = 0\nxbar = mean(dat.q2$Temperature)\nybar = mean(dat.q2$Strength)\nfor(i in 1:length(dat.q2$Temperature)){\n  sum1 = sum1 + ((dat.q2$Temperature[i] - xbar)*(dat.q2$Strength[i] - ybar))\n  sum2 = sum2 + (dat.q2$Temperature[i] - xbar)^2\n}\nb1 = sum1/sum2\nb0 = ybar - b1*xbar\ndat.regression = tibble(method = \"Calculus\", b_0 = b0, b_1 = b1)\n\n\n\nUsing the calculus approach the regression model we get is \\(y = 80.755 + 0.3654x_1\\).",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-b-1",
+    "href": "Math354/HW3/HW3.html#part-b-1",
+    "title": "Homework 3 – Regression",
+    "section": "2.2 Part b",
+    "text": "2.2 Part b\nCompute the estimates we derived using linear algebra in lecture 16: \\[\\widehat{\\boldsymbol{\\beta}} = \\left(\\mathbf{X}'\\mathbf{X}\\right)^{-1} \\mathbf{X}'\\mathbf{Y}.\\] Hint: Run ?matrix() in R for a quick reminder about how to create a matrix.\n\n\n\nCode\nX = matrix(c(rep(1, 5), dat.q2$Temperature), nrow = 5, ncol = 2)\nY = matrix(dat.q2$Strength)\n\nBhat = solve(t(X)%*%X)%*%t(X)%*%Y\ndat.regression = dat.regression |&gt;\n  add_row(method = \"Linear Algebra\", b_0 = Bhat[1], b_1 = Bhat[2])\n\n\n\nUsing the Linear Algebra approach the regression model we get is \\(y = `{r}Bhat[1]` + 0.3654x_1\\).",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-c-1",
+    "href": "Math354/HW3/HW3.html#part-c-1",
+    "title": "Homework 3 – Regression",
+    "section": "2.3 Part c",
+    "text": "2.3 Part c\nCompute the maximum likelihood estimates using optim() in R as described in lecture 16: \\[\\max_{\\beta_0, \\beta_1, \\sigma} \\mathcal{L}(\\boldsymbol{\\theta}=\\{\\beta_0, \\beta_1, \\sigma\\}).\\]\n\n\n\nCode\ny = dat.q2$Strength\nx = dat.q2$Temperature\nn = length(y)\n\nll_theta = function(args){\n  b0 = args[1]\n  b1 = args[2]\n  sd = args[3]\n  sum = 0\n  for(i in 1:n){\n    sum = sum + ((y[i]-(b0+b1*x[i]))^2)/(2*sd^2)\n  }\n  theta = -((-n/2)*log(2*pi)-(n/2)*log(sd^2)-sum)\n}\n\ntheta = optim(c(78, 0.5, 1), ll_theta)\ndat.regression = dat.regression |&gt;\n  add_row(method = \"Log Likliehood\", b_0 = theta$par[1], b_1 = theta$par[2])\n\n\n\nUsing the log likliehood method the computed regression is \\(y = 80.7449173 + 0.3653252x_1\\)",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-d-1",
+    "href": "Math354/HW3/HW3.html#part-d-1",
+    "title": "Homework 3 – Regression",
+    "section": "2.4 Part d",
+    "text": "2.4 Part d\nFit the model using lm() and plot the resulting model. Compare to the results from parts (a) through (c).\n\n\n\nCode\nreg = lm(Strength ~ Temperature, dat.q2)\ndat.regression = dat.regression |&gt;\n  add_row(method = \"`lm()`\", b_0 = reg$coefficients[1], b_1 = reg$coefficients[2])\nknitr::kable(dat.regression)\n\n\n\n\n\nmethod\nb_0\nb_1\n\n\n\n\nCalculus\n80.75500\n0.3654000\n\n\nLinear Algebra\n80.75500\n0.3654000\n\n\nLog Likliehood\n80.74492\n0.3653252\n\n\nlm()\n80.75500\n0.3654000\n\n\n\n\n\n\nComparing the results in the table above, all methods are the same except for the log likliehood estimation. This makes sense because the calculus and linear algebra approaches are exact methods for calculating the regression coeffecients while the log likliehood method is an approximation using computational methods.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-a-2",
+    "href": "Math354/HW3/HW3.html#part-a-2",
+    "title": "Homework 3 – Regression",
+    "section": "3.1 Part a",
+    "text": "3.1 Part a\nFit the model predicting MFAP4 using Fibrosis.Stage. Write out the resulting estimate model and interpret the coefficients.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-b-2",
+    "href": "Math354/HW3/HW3.html#part-b-2",
+    "title": "Homework 3 – Regression",
+    "section": "3.2 Part b",
+    "text": "3.2 Part b\nConduct a residual analysis on the model in part a to demonstrate how to identify when you need a log transformation.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-c-2",
+    "href": "Math354/HW3/HW3.html#part-c-2",
+    "title": "Homework 3 – Regression",
+    "section": "3.3 Part c",
+    "text": "3.3 Part c\nFit the model predicting log(MFAP4) using Fibrosis.Stage. Use the natural log, and not the \\(\\log_2(\\cdot)\\) recorded in the data file. Write out the resulting estimate model and interpret the coefficients.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-d-2",
+    "href": "Math354/HW3/HW3.html#part-d-2",
+    "title": "Homework 3 – Regression",
+    "section": "3.4 Part d",
+    "text": "3.4 Part d\nConduct a residual analysis on the model in part c to demonstrate that the conditions for using regression are met.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-e-1",
+    "href": "Math354/HW3/HW3.html#part-e-1",
+    "title": "Homework 3 – Regression",
+    "section": "3.5 Part e",
+    "text": "3.5 Part e\nFit the model predicting log(MFAP4) using Fibrosis.Stage, Age, and Gender. Use the natural log, and not the \\(\\log_2(\\cdot)\\) recorded in the data file. Write out the resulting estimate model and interpret the coefficients.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-a-3",
+    "href": "Math354/HW3/HW3.html#part-a-3",
+    "title": "Homework 3 – Regression",
+    "section": "4.1 Part a",
+    "text": "4.1 Part a\nSimulate data to match regression assumptions in a loop that runs \\(R=1000\\) times. \\[\\begin{align*}\n    x_i &\\sim \\text{Uniform}(a=0,b=10)\\\\\n    \\epsilon_i &\\sim \\text{Gaussian}(\\mu=0, \\sigma=1)\\\\\n    y_i &= 2 + 1.5 x_i + \\epsilon_i\\\\\n    n &= 30\n\\end{align*}\\] In each iteration, fit a regression line to the data and store the coefficient estimates. Plot the resulting estimates. What do you notice?",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-b-3",
+    "href": "Math354/HW3/HW3.html#part-b-3",
+    "title": "Homework 3 – Regression",
+    "section": "4.2 Part b",
+    "text": "4.2 Part b\nSimulate data to match regression assumptions in a loop that runs \\(R=1000\\) times. \\[\\begin{align*}\n    x_i &\\sim \\text{Uniform}(a=0,b=10)\\\\\n    \\epsilon_i &\\sim \\text{Shifted Exponential}(\\lambda=1, \\mu=0)\\\\\n    y_i &= 2 + 1.5 x_i + \\epsilon_i\\\\\n    n &= 30\n\\end{align*}\\] In each iteration, fit a regression line to the data and store the coefficient estimates. Plot the resulting estimates. What do you notice?\nHint: Use the tolerance::r2exp() function with rate=1 and shift=-1.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "Math354/HW3/HW3.html#part-c-3",
+    "href": "Math354/HW3/HW3.html#part-c-3",
+    "title": "Homework 3 – Regression",
+    "section": "4.3 Part c",
+    "text": "4.3 Part c\nSimulate data to match regression assumptions in a loop that runs \\(R=1000\\) times. \\[\\begin{align*}\n    x_i &\\sim \\text{Uniform}(a=0,b=10)\\\\\n    \\epsilon_i &\\sim \\text{Cauchy}(m=0, s=1)\\\\\n    y_i &= 2 + 1.5 x_i + \\epsilon_i\\\\\n    n &= 30\n\\end{align*}\\] In each iteration, fit a regression line to the data and store the coefficient estimates. Plot the resulting estimates. What do you notice?",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 3: Regression"
+    ]
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About Me",
+    "section": "",
+    "text": "I am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.",
+    "crumbs": [
+      " About"
+    ]
+  },
+  {
+    "objectID": "about.html#education",
+    "href": "about.html#education",
+    "title": "About Me",
+    "section": "",
+    "text": "I am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.",
+    "crumbs": [
+      " About"
+    ]
+  },
+  {
+    "objectID": "about.html#technical-skills",
+    "href": "about.html#technical-skills",
+    "title": "About Me",
+    "section": "Technical Skills",
+    "text": "Technical Skills\n\nLanguages: R, Python, Java, C\nTools: Positron, Quarto, Git/GitHub, LaTeX",
+    "crumbs": [
+      " About"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
+    "objectID": "index.html#welcome",
+    "href": "index.html#welcome",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
     "objectID": "Math354/HW2/HW2.html#part-a",
     "href": "Math354/HW2/HW2.html#part-a",
     "title": "Homework 2 – k Sample Inference",
@@ -148,56 +407,6 @@
     "crumbs": [
       "Data Analysis I",
       "HW 2: k Sample Inference"
-    ]
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Academic Portfolio",
-    "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
-    "crumbs": [
-      " Home"
-    ]
-  },
-  {
-    "objectID": "index.html#welcome",
-    "href": "index.html#welcome",
-    "title": "Academic Portfolio",
-    "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
-    "crumbs": [
-      " Home"
-    ]
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About Me",
-    "section": "",
-    "text": "I am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.",
-    "crumbs": [
-      " About"
-    ]
-  },
-  {
-    "objectID": "about.html#education",
-    "href": "about.html#education",
-    "title": "About Me",
-    "section": "",
-    "text": "I am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.",
-    "crumbs": [
-      " About"
-    ]
-  },
-  {
-    "objectID": "about.html#technical-skills",
-    "href": "about.html#technical-skills",
-    "title": "About Me",
-    "section": "Technical Skills",
-    "text": "Technical Skills\n\nLanguages: R, Python, Java, C\nTools: Positron, Quarto, Git/GitHub, LaTeX",
-    "crumbs": [
-      " About"
     ]
   },
   {
