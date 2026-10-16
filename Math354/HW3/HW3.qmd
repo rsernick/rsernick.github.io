@@ -61,6 +61,7 @@ library(tidyverse)
 library(patchwork)
 source("plotResiduals.R")
 source("plotInfluence.R")
+set.seed(121212)
 ```
 
 # Question 1
@@ -517,6 +518,40 @@ Simulate data to match regression assumptions in a loop that runs $R=1000$ times
 \end{align*}
 In each iteration, fit a regression line to the data and store the coefficient estimates. Plot the resulting estimates. What do you notice?
 
+```{r}
+reps = 1000
+n = 30
+coef = tibble(round = 1:reps)
+b0 = rep(0, reps)
+b1 = rep(0, reps)
+for(i in 1:reps){
+  dat = tibble(x = runif(n, 0, 10),
+               e = rnorm(n, 0, 1),
+               y = 2 + 1.5*x + e)
+  mod = lm(y ~ x, dat)
+  b0[i] = mod$coefficients[1]
+  b1[i] = mod$coefficients[2]
+}
+coef = coef |>
+  mutate(b0 = b0, b1 = b1)
+
+ggplot(data = coef)+
+  geom_histogram(aes(x = b0, y = after_stat(density)), bins = 10, color = "grey")+
+  geom_density(aes(x = b0))+
+  geom_vline(xintercept = 2, color = "green")+
+  labs(x = "b0", y = "Density")+
+  theme_minimal()+
+ggplot(data = coef)+
+  geom_histogram(aes(x = b1, y = after_stat(density)), bins = 10, color = "grey")+
+  geom_density(aes(x = b1))+
+  geom_vline(xintercept = 1.5, color = "green")+
+  labs(x = "b1", y = "Density")+
+  theme_minimal()
+
+```
+
+The graph above shows the distributions of $\beta_0$ and $\beta_1$ calculated in the simulation. Both distributions are centered around their true values ($\beta_0 = 2$ and $\beta1 = 1.5$), shown in green, and they follow a normal distribution. The distribution of $\beta_0$ has higher variance than the distribution of $\beta_1$ .
+
 ## Part b
 Simulate data to match regression assumptions in a loop that runs $R=1000$ times.
 \begin{align*}
@@ -529,6 +564,40 @@ In each iteration, fit a regression line to the data and store the coefficient e
 
 **Hint:** Use the `tolerance::r2exp()` function with `rate=1` and `shift=-1`.
 
+```{r}
+reps = 1000
+n = 30
+coef = tibble(round = 1:reps)
+b0 = rep(0, reps)
+b1 = rep(0, reps)
+for(i in 1:reps){
+  dat = tibble(x = runif(n, 0, 10),
+               e = tolerance::r2exp(n, 1, -1),
+               y = 2 + 1.5*x + e)
+  mod = lm(y ~ x, dat)
+  b0[i] = mod$coefficients[1]
+  b1[i] = mod$coefficients[2]
+}
+coef = coef |>
+  mutate(b0 = b0, b1 = b1)
+
+ggplot(data = coef)+
+  geom_histogram(aes(x = b0, y = after_stat(density)), bins = 10, color = "grey")+
+  geom_density(aes(x = b0))+
+  geom_vline(xintercept = 2, color = "green")+
+  labs(x = "b0", y = "Density")+
+  theme_minimal()+
+ggplot(data = coef)+
+  geom_histogram(aes(x = b1, y = after_stat(density)), bins = 10, color = "grey")+
+  geom_density(aes(x = b1))+
+  geom_vline(xintercept = 1.5, color = "green")+
+  labs(x = "b1", y = "Density")+
+  theme_minimal()
+
+```
+
+In this simulation, both distributions are normal and centered around the true values of $\beta_0$ and $\beta_1$. However, the distribution for $\beta_0$ is slightly right-skewed.
+
 ## Part c
 Simulate data to match regression assumptions in a loop that runs $R=1000$ times.
 \begin{align*}
@@ -539,3 +608,37 @@ Simulate data to match regression assumptions in a loop that runs $R=1000$ times
 \end{align*}
 In each iteration, fit a regression line to the data and store the coefficient estimates. Plot the resulting estimates. What do you notice?
 
+```{r}
+reps = 1000
+n = 30
+coef = tibble(round = 1:reps)
+b0 = rep(0, reps)
+b1 = rep(0, reps)
+for(i in 1:reps){
+  dat = tibble(x = runif(n, 0, 10),
+               e = rcauchy(30, 0, 1),
+               y = 2 + 1.5*x + e)
+  mod = lm(y ~ x, dat)
+  b0[i] = mod$coefficients[1]
+  b1[i] = mod$coefficients[2]
+}
+coef = coef |>
+  mutate(b0 = b0, b1 = b1)
+
+ggplot(data = coef)+
+  geom_histogram(aes(x = b0, y = after_stat(density)), bins = 10, color = "grey")+
+  geom_density(aes(x = b0))+
+  geom_vline(xintercept = 2, color = "green")+
+  labs(x = "b0", y = "Density")+
+  xlim(-6, 10)+
+  theme_minimal()+
+ggplot(data = coef)+
+  geom_histogram(aes(x = b1, y = after_stat(density)), bins = 10, color = "grey")+
+  geom_density(aes(x = b1))+
+  geom_vline(xintercept = 1.5, color = "green")+
+  labs(x = "b1", y = "Density")+
+  xlim(-1, 4)+
+  theme_minimal()
+```
+
+In this simulation both distributions are centered around their true values, but they are not normal and the variance is very high. The range of values for $\beta_0$ was $`{r} round(max(b0) - min(b0), 2)`$ and the range of values for $\beta_1$ was $`{r} round(max(b1) - min(b1), 2)`$.
