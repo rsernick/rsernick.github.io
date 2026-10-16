@@ -390,7 +390,7 @@ dat.regression = dat.regression |>
   add_row(method = "Linear Algebra", b_0 = Bhat[1], b_1 = Bhat[2])
 ```
 
-Using the Linear Algebra approach the regression model we get is $y = `{r}Bhat[1]` + `{r} Bhat[2]`x_1$.
+Using the Linear Algebra approach the regression model we get is $y = `{r} Bhat[1]` + `{r} Bhat[2]`x_1$.
 
 ## Part c
 Compute the maximum likelihood estimates using `optim()` in `R` as described in lecture 16:
@@ -442,21 +442,68 @@ dat.mfap4 <- read_csv("Bracht2016.csv")
 ## Part a
 Fit the model predicting `MFAP4` using `Fibrosis.Stage`. Write out the resulting estimate model and interpret the coefficients.
 
+```{r}
+mod.q3 = lm(MFAP4 ~ Fibrosis.Stage, dat.mfap4)
+```
+
+$$
+\hat{y} = `{r} round(mod.q3$coefficients[1], 2)` + `{r} round(mod.q3$coefficients[2], 2)`x_1 + `{r} round(mod.q3$coefficients[3], 2)`x_2 +`{r} round(mod.q3$coefficients[4], 2)`x_3 + `{r} round(mod.q3$coefficients[5], 2)`x_4
+$$
+
+In the regression model above $y$ represents MFAP4 level, the intercept represents the baseline MFAP4 levels, someone with stage 0 fibrosis. $x_1$ through $x_4$ represent the stages of fibrosisis, if the patient has fibrosis stage $n$ then $x_n$ is 1 and the rest are 0. The coefficients represent how much MFAP4 levels are predicted to increase from the intercept (baseline) based on the observed fibrosis stage.
+
 ## Part b
 Conduct a residual analysis on the model in part a to demonstrate how to identify when you need a log transformation.
 
+```{r}
+plotResiduals(mod.q3)
+```
+
+
+The residual plot shows a clear increase of variation as the fibrosis stages increase, which is a sign of a nonlinear relationship, aswell as several outliers. Adittionaly the qqplot on the left shows the deviation increasing exponentially. In this case it makes sense to do a log transformation because the relationship looks like it could be exponential.
 
 ## Part c
 Fit the model predicting `log(MFAP4)` using `Fibrosis.Stage`. Use the natural log, and not the $\log_2(\cdot)$ recorded in the data file. Write out the resulting estimate model and interpret the coefficients.
 
+```{r}
+mod2.q3 = lm(log(MFAP4) ~ Fibrosis.Stage, dat.mfap4)
+```
+
+$$
+\hat{y} = `{r} round(mod2.q3$coefficients[1], 2)` + `{r} round(mod2.q3$coefficients[2], 2)`x_1 + `{r} round(mod2.q3$coefficients[3], 2)`x_2 +`{r} round(mod2.q3$coefficients[4], 2)`x_3 + `{r} round(mod2.q3$coefficients[5], 2)`x_4
+$$
+
+Now the interpretation of the model is the same as the last one excpet we are predicting $\ln{\text{MFAP4}}$ not MFAP4. 
 
 ## Part d
 Conduct a residual analysis on the model in part c to demonstrate that the conditions for using regression are met.
 
+```{r}
+plotResiduals(mod2.q3)
+```
+
+The qqplot on the left for the log transformation model shows that the residuals follow a normal distribution unlike in the model before. The residual plot shows only $3$ outliers this time and the variance of the residuals are now constant, evident of a linear relationship. This model much more strongly shows the relationship between MFAP4 and fibrosis stage and more accurately predicts MFAP4 values.
+
 ## Part e
 Fit the model predicting `log(MFAP4)` using `Fibrosis.Stage`, `Age`, and `Gender`. Use the natural log, and not the $\log_2(\cdot)$ recorded in the data file. Write out the resulting estimate model and interpret the coefficients.
 
+```{r}
+mod3.q3 = lm(log(MFAP4) ~ Fibrosis.Stage + Age + Gender, dat.mfap4)
+```
 
+$$
+\hat{y} = `{r} round(mod3.q3$coefficients[1], 2)` + `{r} round(mod3.q3$coefficients[2], 2)`x_1 + `{r} round(mod3.q3$coefficients[3], 2)`x_2 + `{r} round(mod3.q3$coefficients[4], 2)`x_3 + `{r} round(mod3.q3$coefficients[5], 2)`x_4 + `{r} round(mod3.q3$coefficients[6], 2)`x_5 `{r} round(mod3.q3$coefficients[7], 2)`x_6 
+$$
+$$
+x_1 = \text{Fibrosis Stage 1}\\
+x_2 = \text{Fibrosis Stage 2}\\
+x_3 = \text{Fibrosis Stage 3}\\
+x_4 = \text{Fibrosis Stage 4}\\
+x_5 = \text{Age}\\
+x_6 = (\text{Gender == Male})
+$$
+
+For this model since we have multiple variables of different types, the intercept is predicted $\log{\text{MFAP4}}$ value when an individual is fibrosis stage $0$, age $0$, and gender female. The next $4$ coefficients are the increase in predicted $\log{\text{MFAP4}}$ value based on fibrosis stage, fibrosis stage $n$ would correspond to $x_n$ being $1$ and the other fibrosis variables being $0$. The sixth coefficient, $\beta_5$, is the increase in predicted $\log{\text{MFAP4}}$ value for an increase of one year of age. The last coefficient, $\beta_6$ is the increase (or in this case decrease) in predicted $\log{\text{MFAP4}}$ value if the individual is a male.
 
 # Question 4
 

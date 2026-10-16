@@ -122,7 +122,7 @@
     "href": "Math354/HW3/HW3.html#part-b-1",
     "title": "Homework 3 – Regression",
     "section": "2.2 Part b",
-    "text": "2.2 Part b\nCompute the estimates we derived using linear algebra in lecture 16: \\[\\widehat{\\boldsymbol{\\beta}} = \\left(\\mathbf{X}'\\mathbf{X}\\right)^{-1} \\mathbf{X}'\\mathbf{Y}.\\] Hint: Run ?matrix() in R for a quick reminder about how to create a matrix.\n\n\n\nCode\nX = matrix(c(rep(1, 5), dat.q2$Temperature), nrow = 5, ncol = 2)\nY = matrix(dat.q2$Strength)\n\nBhat = solve(t(X)%*%X)%*%t(X)%*%Y\ndat.regression = dat.regression |&gt;\n  add_row(method = \"Linear Algebra\", b_0 = Bhat[1], b_1 = Bhat[2])\n\n\n\nUsing the Linear Algebra approach the regression model we get is \\(y = `{r}Bhat[1]` + 0.3654x_1\\).",
+    "text": "2.2 Part b\nCompute the estimates we derived using linear algebra in lecture 16: \\[\\widehat{\\boldsymbol{\\beta}} = \\left(\\mathbf{X}'\\mathbf{X}\\right)^{-1} \\mathbf{X}'\\mathbf{Y}.\\] Hint: Run ?matrix() in R for a quick reminder about how to create a matrix.\n\n\n\nCode\nX = matrix(c(rep(1, 5), dat.q2$Temperature), nrow = 5, ncol = 2)\nY = matrix(dat.q2$Strength)\n\nBhat = solve(t(X)%*%X)%*%t(X)%*%Y\ndat.regression = dat.regression |&gt;\n  add_row(method = \"Linear Algebra\", b_0 = Bhat[1], b_1 = Bhat[2])\n\n\n\nUsing the Linear Algebra approach the regression model we get is \\(y = 80.755 + 0.3654x_1\\).",
     "crumbs": [
       "Data Analysis I",
       "HW 3: Regression"
@@ -155,7 +155,7 @@
     "href": "Math354/HW3/HW3.html#part-a-2",
     "title": "Homework 3 – Regression",
     "section": "3.1 Part a",
-    "text": "3.1 Part a\nFit the model predicting MFAP4 using Fibrosis.Stage. Write out the resulting estimate model and interpret the coefficients.",
+    "text": "3.1 Part a\nFit the model predicting MFAP4 using Fibrosis.Stage. Write out the resulting estimate model and interpret the coefficients.\n\n\n\nCode\nmod.q3 = lm(MFAP4 ~ Fibrosis.Stage, dat.mfap4)\n\n\n\n\\[\n\\hat{y} = 9.23 + 1.3x_1 + 3.15x_2 +11.74x_3 + 15.39x_4\n\\]\nIn the regression model above \\(y\\) represents MFAP4 level, the intercept represents the baseline MFAP4 levels, someone with stage 0 fibrosis. \\(x_1\\) through \\(x_4\\) represent the stages of fibrosisis, if the patient has fibrosis stage \\(n\\) then \\(x_n\\) is 1 and the rest are 0. The coefficients represent how much MFAP4 levels are predicted to increase from the intercept (baseline) based on the observed fibrosis stage.",
     "crumbs": [
       "Data Analysis I",
       "HW 3: Regression"
@@ -166,7 +166,7 @@
     "href": "Math354/HW3/HW3.html#part-b-2",
     "title": "Homework 3 – Regression",
     "section": "3.2 Part b",
-    "text": "3.2 Part b\nConduct a residual analysis on the model in part a to demonstrate how to identify when you need a log transformation.",
+    "text": "3.2 Part b\nConduct a residual analysis on the model in part a to demonstrate how to identify when you need a log transformation.\n\n\n\nCode\nplotResiduals(mod.q3)\n\n\n\n\n\n\n\n\n\n\nThe residual plot shows a clear increase of variation as the fibrosis stages increase, which is a sign of a nonlinear relationship, aswell as several outliers. Adittionaly the qqplot on the left shows the deviation increasing exponentially. In this case it makes sense to do a log transformation because the relationship looks like it could be exponential.",
     "crumbs": [
       "Data Analysis I",
       "HW 3: Regression"
@@ -177,7 +177,7 @@
     "href": "Math354/HW3/HW3.html#part-c-2",
     "title": "Homework 3 – Regression",
     "section": "3.3 Part c",
-    "text": "3.3 Part c\nFit the model predicting log(MFAP4) using Fibrosis.Stage. Use the natural log, and not the \\(\\log_2(\\cdot)\\) recorded in the data file. Write out the resulting estimate model and interpret the coefficients.",
+    "text": "3.3 Part c\nFit the model predicting log(MFAP4) using Fibrosis.Stage. Use the natural log, and not the \\(\\log_2(\\cdot)\\) recorded in the data file. Write out the resulting estimate model and interpret the coefficients.\n\n\n\nCode\nmod2.q3 = lm(log(MFAP4) ~ Fibrosis.Stage, dat.mfap4)\n\n\n\n\\[\n\\hat{y} = 2.03 + 0.13x_1 + 0.3x_2 +0.77x_3 + 0.99x_4\n\\]\nNow the interpretation of the model is the same as the last one excpet we are predicting \\(\\ln{\\text{MFAP4}}\\) not MFAP4.",
     "crumbs": [
       "Data Analysis I",
       "HW 3: Regression"
@@ -188,7 +188,7 @@
     "href": "Math354/HW3/HW3.html#part-d-2",
     "title": "Homework 3 – Regression",
     "section": "3.4 Part d",
-    "text": "3.4 Part d\nConduct a residual analysis on the model in part c to demonstrate that the conditions for using regression are met.",
+    "text": "3.4 Part d\nConduct a residual analysis on the model in part c to demonstrate that the conditions for using regression are met.\n\n\n\nCode\nplotResiduals(mod2.q3)\n\n\n\n\n\n\n\n\n\n\nThe qqplot on the left for the log transformation model shows that the residuals follow a normal distribution unlike in the model before. The residual plot shows only \\(3\\) outliers this time and the variance of the residuals are now constant, evident of a linear relationship. This model much more strongly shows the relationship between MFAP4 and fibrosis stage and more accurately predicts MFAP4 values.",
     "crumbs": [
       "Data Analysis I",
       "HW 3: Regression"
@@ -199,7 +199,7 @@
     "href": "Math354/HW3/HW3.html#part-e-1",
     "title": "Homework 3 – Regression",
     "section": "3.5 Part e",
-    "text": "3.5 Part e\nFit the model predicting log(MFAP4) using Fibrosis.Stage, Age, and Gender. Use the natural log, and not the \\(\\log_2(\\cdot)\\) recorded in the data file. Write out the resulting estimate model and interpret the coefficients.",
+    "text": "3.5 Part e\nFit the model predicting log(MFAP4) using Fibrosis.Stage, Age, and Gender. Use the natural log, and not the \\(\\log_2(\\cdot)\\) recorded in the data file. Write out the resulting estimate model and interpret the coefficients.\n\n\n\nCode\nmod3.q3 = lm(log(MFAP4) ~ Fibrosis.Stage + Age + Gender, dat.mfap4)\n\n\n\n\\[\n\\hat{y} = 1.52 + 0.13x_1 + 0.21x_2 + 0.6x_3 + 0.83x_4 + 0.01x_5 -0.14x_6\n\\] \\[\nx_1 = \\text{Fibrosis Stage 1}\\\\\nx_2 = \\text{Fibrosis Stage 2}\\\\\nx_3 = \\text{Fibrosis Stage 3}\\\\\nx_4 = \\text{Fibrosis Stage 4}\\\\\nx_5 = \\text{Age}\\\\\nx_6 = (\\text{Gender == Male})\n\\]\nFor this model since we have multiple variables of different types, the intercept is predicted \\(\\log{\\text{MFAP4}}\\) value when an individual is fibrosis stage \\(0\\), age \\(0\\), and gender female. The next \\(4\\) coefficients are the increase in predicted \\(\\log{\\text{MFAP4}}\\) value based on fibrosis stage, fibrosis stage \\(n\\) would correspond to \\(x_n\\) being \\(1\\) and the other fibrosis variables being \\(0\\). The sixth coefficient, \\(\\beta_5\\), is the increase in predicted \\(\\log{\\text{MFAP4}}\\) value for an increase of one year of age. The last coefficient, \\(\\beta_6\\) is the increase (or in this case decrease) in predicted \\(\\log{\\text{MFAP4}}\\) value if the individual is a male.",
     "crumbs": [
       "Data Analysis I",
       "HW 3: Regression"

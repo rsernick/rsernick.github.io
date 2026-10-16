@@ -1109,7 +1109,7 @@ Table&nbsp;6: Estimated marginal trends for the model in Question 1 when quantit
 </details>
 </div>
 <p></p>
-<p>Using the Linear Algebra approach the regression model we get is <span class="math inline">\(y = `{r}Bhat[1]` + 0.3654x_1\)</span>.</p>
+<p>Using the Linear Algebra approach the regression model we get is <span class="math inline">\(y = 80.755 + 0.3654x_1\)</span>.</p>
 </section>
 <section id="part-c-1" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="part-c-1"><span class="header-section-number">2.3</span> Part c</h2>
@@ -1205,22 +1205,97 @@ Table&nbsp;6: Estimated marginal trends for the model in Question 1 when quantit
 <section id="part-a-2" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="part-a-2"><span class="header-section-number">3.1</span> Part a</h2>
 <p>Fit the model predicting <code>MFAP4</code> using <code>Fibrosis.Stage</code>. Write out the resulting estimate model and interpret the coefficients.</p>
+<p></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-label="1"></a>mod.q3 <span class="ot">=</span> <span class="fu">lm</span>(MFAP4 <span class="sc">~</span> Fibrosis.Stage, dat.mfap4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p></p>
+<p><span class="math display">\[
+\hat{y} = 9.23 + 1.3x_1 + 3.15x_2 +11.74x_3 + 15.39x_4
+\]</span></p>
+<p>In the regression model above <span class="math inline">\(y\)</span> represents MFAP4 level, the intercept represents the baseline MFAP4 levels, someone with stage 0 fibrosis. <span class="math inline">\(x_1\)</span> through <span class="math inline">\(x_4\)</span> represent the stages of fibrosisis, if the patient has fibrosis stage <span class="math inline">\(n\)</span> then <span class="math inline">\(x_n\)</span> is 1 and the rest are 0. The coefficients represent how much MFAP4 levels are predicted to increase from the intercept (baseline) based on the observed fibrosis stage.</p>
 </section>
 <section id="part-b-2" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="part-b-2"><span class="header-section-number">3.2</span> Part b</h2>
 <p>Conduct a residual analysis on the model in part a to demonstrate how to identify when you need a log transformation.</p>
+<p></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-label="1"></a><span class="fu">plotResiduals</span>(mod.q3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="HW3_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p></p>
+<p>The residual plot shows a clear increase of variation as the fibrosis stages increase, which is a sign of a nonlinear relationship, aswell as several outliers. Adittionaly the qqplot on the left shows the deviation increasing exponentially. In this case it makes sense to do a log transformation because the relationship looks like it could be exponential.</p>
 </section>
 <section id="part-c-2" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="part-c-2"><span class="header-section-number">3.3</span> Part c</h2>
 <p>Fit the model predicting <code>log(MFAP4)</code> using <code>Fibrosis.Stage</code>. Use the natural log, and not the <span class="math inline">\(\log_2(\cdot)\)</span> recorded in the data file. Write out the resulting estimate model and interpret the coefficients.</p>
+<p></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-label="1"></a>mod2.q3 <span class="ot">=</span> <span class="fu">lm</span>(<span class="fu">log</span>(MFAP4) <span class="sc">~</span> Fibrosis.Stage, dat.mfap4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p></p>
+<p><span class="math display">\[
+\hat{y} = 2.03 + 0.13x_1 + 0.3x_2 +0.77x_3 + 0.99x_4
+\]</span></p>
+<p>Now the interpretation of the model is the same as the last one excpet we are predicting <span class="math inline">\(\ln{\text{MFAP4}}\)</span> not MFAP4.</p>
 </section>
 <section id="part-d-2" class="level2" data-number="3.4">
 <h2 data-number="3.4" class="anchored" data-anchor-id="part-d-2"><span class="header-section-number">3.4</span> Part d</h2>
 <p>Conduct a residual analysis on the model in part c to demonstrate that the conditions for using regression are met.</p>
+<p></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-label="1"></a><span class="fu">plotResiduals</span>(mod2.q3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="HW3_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p></p>
+<p>The qqplot on the left for the log transformation model shows that the residuals follow a normal distribution unlike in the model before. The residual plot shows only <span class="math inline">\(3\)</span> outliers this time and the variance of the residuals are now constant, evident of a linear relationship. This model much more strongly shows the relationship between MFAP4 and fibrosis stage and more accurately predicts MFAP4 values.</p>
 </section>
 <section id="part-e-1" class="level2" data-number="3.5">
 <h2 data-number="3.5" class="anchored" data-anchor-id="part-e-1"><span class="header-section-number">3.5</span> Part e</h2>
 <p>Fit the model predicting <code>log(MFAP4)</code> using <code>Fibrosis.Stage</code>, <code>Age</code>, and <code>Gender</code>. Use the natural log, and not the <span class="math inline">\(\log_2(\cdot)\)</span> recorded in the data file. Write out the resulting estimate model and interpret the coefficients.</p>
+<p></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-label="1"></a>mod3.q3 <span class="ot">=</span> <span class="fu">lm</span>(<span class="fu">log</span>(MFAP4) <span class="sc">~</span> Fibrosis.Stage <span class="sc">+</span> Age <span class="sc">+</span> Gender, dat.mfap4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p></p>
+<p><span class="math display">\[
+\hat{y} = 1.52 + 0.13x_1 + 0.21x_2 + 0.6x_3 + 0.83x_4 + 0.01x_5 -0.14x_6
+\]</span> <span class="math display">\[
+x_1 = \text{Fibrosis Stage 1}\\
+x_2 = \text{Fibrosis Stage 2}\\
+x_3 = \text{Fibrosis Stage 3}\\
+x_4 = \text{Fibrosis Stage 4}\\
+x_5 = \text{Age}\\
+x_6 = (\text{Gender == Male})
+\]</span></p>
+<p>For this model since we have multiple variables of different types, the intercept is predicted <span class="math inline">\(\log{\text{MFAP4}}\)</span> value when an individual is fibrosis stage <span class="math inline">\(0\)</span>, age <span class="math inline">\(0\)</span>, and gender female. The next <span class="math inline">\(4\)</span> coefficients are the increase in predicted <span class="math inline">\(\log{\text{MFAP4}}\)</span> value based on fibrosis stage, fibrosis stage <span class="math inline">\(n\)</span> would correspond to <span class="math inline">\(x_n\)</span> being <span class="math inline">\(1\)</span> and the other fibrosis variables being <span class="math inline">\(0\)</span>. The sixth coefficient, <span class="math inline">\(\beta_5\)</span>, is the increase in predicted <span class="math inline">\(\log{\text{MFAP4}}\)</span> value for an increase of one year of age. The last coefficient, <span class="math inline">\(\beta_6\)</span> is the increase (or in this case decrease) in predicted <span class="math inline">\(\log{\text{MFAP4}}\)</span> value if the individual is a male.</p>
 </section>
 </section>
 <section id="question-4" class="level1" data-number="4">
