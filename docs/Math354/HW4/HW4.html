@@ -320,7 +320,10 @@ window.Quarto = {
   <li><a href="#likelihood-to-stop-drinking-cocoa" id="toc-likelihood-to-stop-drinking-cocoa" class="nav-link" data-scroll-target="#likelihood-to-stop-drinking-cocoa"><span class="header-section-number">3.2</span> Likelihood to Stop Drinking Cocoa</a></li>
   <li><a href="#preference-for-chance-choice" id="toc-preference-for-chance-choice" class="nav-link" data-scroll-target="#preference-for-chance-choice"><span class="header-section-number">3.3</span> Preference for Chance Choice</a></li>
   </ul></li>
-  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">4</span> Discussion</a></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">4</span> Discussion</a>
+  <ul class="collapse">
+  <li><a href="#discussion-1" id="toc-discussion-1" class="nav-link" data-scroll-target="#discussion-1"><span class="header-section-number">4.1</span> Discussion</a></li>
+  </ul></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="HW4.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
     </div>
@@ -752,7 +755,7 @@ y_{\text{pick1}} = 2.524  -0.005x_{\text{age}} + 0.246I(x_{\text{treatment1}} = 
 </div>
 </div>
 <p></p>
-<p>The table above shows the results of the regression for our variables of interest. While the p-values for age and treatment1 are not significant, their interaction is. Using <code>emtrends()</code> to untangle the interaction between age and treatment1 shows with negative framing, as age increases the response decreases by <span class="math inline">\(-0.0051\)</span>, and with positive framing, as age increases the response increases by <span class="math inline">\(0.0047\)</span>.</p>
+<p>The table above shows the results of the regression for our variables of interest. While the p-values for age and treatment1 are not significant, their interaction is. Using <code>emtrends()</code> to untangle the interaction between age and treatment1 shows with negative framing, as age increases the response decreases by <span class="math inline">\(0.0051\)</span>, and with positive framing, as age increases the response increases by <span class="math inline">\(0.0047\)</span>.</p>
 </section>
 <section id="likelihood-to-stop-drinking-cocoa" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="likelihood-to-stop-drinking-cocoa"><span class="header-section-number">3.2</span> Likelihood to Stop Drinking Cocoa</h2>
@@ -914,6 +917,7 @@ y_{\text{pick2}} = 2.142  -0.011x_{\text{age}} + 0.177I(x_{\text{treatment2}} = 
 </div>
 </div>
 <p></p>
+<p>The table above shows the results of the regression for our variables of interest. The p-values for age, treatment2, and their interaction are all statistically insignificant. Using <code>emtrends()</code> to examine the relationship between age and treatment2 shows that with negative framing, as age increases, the predicted response decreases by <span class="math inline">\(0.0108\)</span> per year, while with positive framing, the predicted response decreases by only <span class="math inline">\(0.0018\)</span> per year. Although positive framing appears to weaken the negative relationship between age and the response, the interaction is not statistically significant (<span class="math inline">\(p=0.2911\)</span>). Additionally, the interaction has a very small partial omega-squared (<span class="math inline">\(\omega_p^2=0.0002\)</span>), suggesting a negligible effect size.</p>
 </section>
 <section id="preference-for-chance-choice" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="preference-for-chance-choice"><span class="header-section-number">3.3</span> Preference for Chance Choice</h2>
@@ -1075,16 +1079,24 @@ y_{\text{pick3}} = 0.773  0.014x_{\text{age}} + 0.021I(x_{\text{treatment3}} = \
 </div>
 </div>
 <p></p>
+<p>The table above shows the results of the regression for our variables of interest. While the p-value for age is statistically significant (<span class="math inline">\(p=0.0410\)</span>), the p-values for treatment3 and its interaction with age are not. Using <code>emtrends()</code> to examine the relationship between age and treatment3 shows that with negative framing, as age increases, the predicted response increases by <span class="math inline">\(0.0142\)</span> per year, while with positive framing, the predicted response decreases slightly by <span class="math inline">\(0.0011\)</span> per year. Although positive framing appears to reverse the positive relationship between age and the response, the interaction is not statistically significant (<span class="math inline">\(p=0.1168\)</span>). Additionally, the interaction has a very small partial omega-squared (<span class="math inline">\(\omega_p^2=0.0025\)</span>), suggesting a negligible effect size.</p>
 </section>
 </section>
 <section id="discussion" class="level1" data-number="4">
-
+<h1 data-number="4"><span class="header-section-number">4</span> Discussion</h1>
+<section id="discussion-1" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="discussion-1"><span class="header-section-number">4.1</span> Discussion</h2>
+<p>The results from the three scenarios showed that there may be an interaction between age and the framing of a question, however, only Scenario 1 showed a statistically significant interaction between age and treatment, suggesting that age may moderate the effect of framing in certain contexts but not consistently across all three scenarios.</p>
+<p>In Scenario 1, perceptions of drug efficacy, the interaction between age and framing was statistically significant (<span class="math inline">\(p=0.0475\)</span>). With negative framing, older respondents tended to rate the drug less favorably, while under positive framing, older respondents tended to rate it more favorably. This suggests that positive framing may become more influential in perceptions of drug efficacy as age increases. However, the interaction had a small effect size (<span class="math inline">\(\omega_p^2\approx0.0051\)</span>), indicating that the relationship was relatively weak.</p>
+<p>In Scenario 2, which examined willingness to continue drinking hot cocoa despite potential health risks, both framing conditions showed a negative relationship between age and the likelihood of continuing consumption. This relationship was stronger under negative framing, suggesting that older respondents may be more inclined to stop drinking hot cocoa when presented with information emphasizing increased cancer risk. However, the interaction was not statistically significant (<span class="math inline">\(p=0.2911\)</span>), providing insufficient evidence that framing changes the relationship between age and willingness to continue drinking hot cocoa.</p>
+<p>In Scenario 3, which examined preferences between safe and risky choices, age had a statistically significant positive relationship with preference for the risky option under negative framing (<span class="math inline">\(p=0.0410\)</span>). Under positive framing, the estimated relationship between age and risk preference was slightly negative. This pattern suggests that older respondents may become more willing to choose the risky option when outcomes are framed in terms of lives lost rather than lives saved. However, the interaction was not statistically significant (<span class="math inline">\(p=0.1168\)</span>), meaning there is insufficient evidence that the relationship between age and risk preference differs across framing conditions.</p>
 
 
 
 </section>
+</section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">4 Discussion</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
 <div id="ref-Xu24" class="csl-entry" role="listitem">
 Xu, Lance. 2024. <span>“Advanced Age Predicts Increased Susceptibility to Attribute, Goal, and Risky-Choice Framing in Negative Frame Valences.”</span> <em>Humanities and Social Sciences Communications</em> 11 (1): 217.
 </div>
