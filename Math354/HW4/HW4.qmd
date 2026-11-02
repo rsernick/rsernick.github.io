@@ -1,0 +1,336 @@
+---
+title: Homework 4 -- Regression Consult # Title of the document
+
+# Bibliography Details
+bibliography: HW4References.bib  # Name of bib file in the same folder 
+bibliographystyle: apa            # Bibliography style
+
+execute:               # Default settings for code blocks
+  warning: false       # Do not print warnings
+  message: false       # Do not print messages
+  size: "scriptsize"   # Set code size to script size
+
+# Below will do html by default. To render the entire project
+# Use the following code:
+# quarto::quarto_render("HW4.qmd")
+format:
+  pdf:        # Specify .pdf formatting options 
+    documentclass: article     # Document Class
+    number-sections: true      # Number Sections
+    reference-section-title: "References" # Title for reference section
+    code-line-numbers: true    # Line numbers printed in code
+    cap-location: top          # Captions at the top of tables 
+    geometry:
+      - top=0.75in
+      - left=0.75in
+      - bottom=0.75in
+      - right=0.75in
+  html:       # Specify HTML formatting options 
+    number-sections: true      # Number Sections
+    code-fold: true            # Button to show code
+    code-line-numbers: true    # Line numbers printed in code
+    cap-location: top          # Captions at the top of tables and figures
+format-links: [pdf]
+---
+```{r}
+#| echo: false
+
+default_chunk_hook  <- knitr::knit_hooks$get("chunk")
+
+latex_font_size <- c("Huge", "huge", "LARGE", "Large", 
+                     "large", "normalsize", "small", 
+                     "footnotesize", "scriptsize", "tiny")
+
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- default_chunk_hook(x, options)
+  if(options$size %in% latex_font_size) {
+    paste0("\n \\", options$size, "\n\n", 
+      x, 
+      "\n\n \\normalsize"
+    )
+  } else {
+    x
+  }
+})
+```
+
+```{r}
+#| label: load-packages
+#| include: false
+library(tidyverse)
+library(patchwork)
+library(GGally)
+library(emmeans)
+source("plotInfluence.R")
+source("plotResiduals.R")
+```
+
+When people make decisions, their choices are often swayed by how information is presented. This is often described as "the framing effect." One example of this, is how commercials describe new medications. As an example, Nereus (tradipitant), a new drug for motion-induced vomiting like sea-sickness, is marketed with a **positive frame** as reducing vomiting incidence from 44% to 18% (a reduction of 60%). This marketing makes it seem more effective than a **negative frame** that says just 18% of patients still experienced vomiting, even though both statements are true. 
+
+@Xu24 aimed to evaluate whether older adults are more or less vulnerable to framing than younger adults. They collected a sample of 696 adults aged 18 to 71 and exposed them to three different scenarios
+
+**Scenario 1:** Rate Drug Efficacy (1 = very bad, 6 = very good)
+
+* **Positive Frame:** 70 out of 100 patients felt better
+* **Negative Frame:** 30 out of 100 patients did not feel better
+
+**Scenario 2:** Likelihood to stop drinking cocoa (1 = surely stop, 6 = surely continue)
+
+* **Positive Frame:** Stopping drinking hot cocoa reduces cadmium and cancer risk.
+* **Negative Frame:** Continuing to drink hot cocoa increases cadmium and cancer risk.
+
+**Scenario 3:** Preference for chance choice (1 = surely safe option, 6 = surely risky)
+
+* **Positive Frame:** Choice between 200 saved vs 1/3 chance all 600 are saved.
+* **Negative Frame:** Choice between 400 die vs 2/3 chance all 600 die.
+
+
+In each scenario, participants were randomly assigned a positive or negative frame. They rated their response on a 1-6 scale. The researchers want to build three models, one for each scenario adjusting for simultaneous linear changes in demographic variables (gender, ethnicity, education level, political affiliation).
+ 
+They want to evaluate whether, as adults age, the way choices are worded have more influence on their judgments and ultimate choices. If there is a change, are those changes driven by positive or negative framings? At what age does this effect onset? 
+
+**Your Goals:**
+
+* Determine the correct analysis strategy and conduct the necessary analyses. 
+    * Hint 1: Ensure to assess and communicate results about the model fit. 
+    * Hint 2: Ensure to think about whether or which interactions need to be included.
+    * Hint 3: You will need run various post hoc procedures (e.g., `emmeans`, `emtrends` or `johnson_neyman`).
+    * Hint 4: Looking at the paper may be helpful. They do include `R` code, but I expect you to do a much better job using the techniques we discussed (they do somethings differently)
+* Write a clear, concise, complete, and correct report conveying an answer to their research question.
+
+The data are in `HW4Data.csv` but they will require some manual and `tidyverse` cleaning.
+
+# Loading and Cleaning the Data
+
+```{r}
+dat.bad = read_csv("HW4Data.csv")
+dat.good = tibble(pos1 = rep("", length(dat.bad$`100 ill patients are assigned to a treatment; 70 patients felt better. - How would you evaluate the effectiveness of the drug?`) - 1))
+for(i in 1:length(dat.bad)){
+  dat.good = dat.good |>
+    mutate(!!sym(as.character(dat.bad[1, i])) := as.vector(dat.bad[2:length(dat.bad$`100 ill patients are assigned to a treatment; 70 patients felt better. - How would you evaluate the effectiveness of the drug?`), i])[[1]])
+}
+
+dat.good = dat.good |>
+  filter_out(when_any(is.na(confirmation), is.na(ageattentioncheck), is.na(attentioncheck)))
+
+dat.good = dat.good |>
+  mutate(pos1 = as.numeric(pos1),
+         neg1 = as.numeric(neg1),
+         pos2 = as.numeric(pos2),
+         neg2 = as.numeric(neg2),
+         pos3 = as.numeric(pos3),
+         neg3 = as.numeric(neg3),
+         age = as.numeric(age),
+         pick1 = as.numeric(pick1),
+         pick2 = as.numeric(pick2),
+         pick3 = as.numeric(pick3)
+         )
+
+```
+
+To begin cleaning the data I created a new data frame and used the first item in each column of the original data as the names of the new columns and the rest of the column as the data. Next I filtered out the failed attention checks and informed consent confirmations. After this all of the incomplete data were removed and the sample size was reduced to $n = `{r} length(dat.good$pos1)`$.
+
+# Exploratory Data Analyses
+
+## Positive vs. Negative Framing
+```{r}
+p1 = (ggplot(data = dat.good) +
+  geom_density(aes(x = pos1), binwidth = 1) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = mean(dat.good$pos1, na.rm = TRUE), color = "green") +
+  theme_minimal()) /
+ggplot(data = dat.good) +
+  geom_density(aes(x = neg1), binwidth = 1) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = mean(dat.good$neg1, na.rm = TRUE), color = "green") +
+  theme_minimal() 
+p2 = (ggplot(data = dat.good) +
+  geom_density(aes(x = pos2), binwidth = 1) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = mean(dat.good$pos2, na.rm = TRUE), color = "green") +
+  theme_minimal()) /
+ggplot(data = dat.good) +
+  geom_density(aes(x = neg2), binwidth = 1) +
+  geom_hline(yintercept = 0) +
+  geom_vline(aes(color = "mean",xintercept = mean(dat.good$neg2, na.rm = TRUE))) +
+  scale_color_manual(values = c("mean" = "green")) +
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.title = element_blank())
+p3 = (ggplot(data = dat.good) +
+  geom_density(aes(x = pos3), binwidth = 1) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = mean(dat.good$pos3, na.rm = TRUE), color = "green") +
+  theme_minimal()) /
+ggplot(data = dat.good) +
+  geom_density(aes(x = neg3), binwidth = 1) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = mean(dat.good$neg3, na.rm = TRUE), color = "green") +
+  theme_minimal()
+
+p1 | p2 | p3
+```
+
+The graph above displays the distributions of responses given treatment (positive framing or negative framing) and their respective means for each question asked by the researchers. The means across treatments are different for each question across treatments and the distributions are also different. Assuming the sample is representative a statistical test and post-hoc analysis may reveal that the framing of a question effects the way people respond.
+
+## Framing by Age
+
+```{r}
+(ggplot(data = dat.good) +
+  geom_smooth(aes(x = age, y = pos1), color = "green") +
+  geom_smooth(aes(x = age, y = neg1), color = "red") +
+  labs(x = "Age", y = "Rating", title = "Question 1") +
+  scale_y_continuous(limits = c(2, 4.5)) +
+  theme_minimal()) |
+(ggplot(data = dat.good) +
+  geom_smooth(aes(x = age, y = pos2, color = "Positive Framing")) +
+  geom_smooth(aes(x = age, y = neg2, color = "Negative Framing")) +
+  labs(x = "Age", y = "Rating", title = "Question 2") +
+  scale_y_continuous(limits = c(2, 4.5)) +
+  scale_color_manual(values = c("Positive Framing" = "green", "Negative Framing" = "red")) +
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.title = element_blank())) |
+(ggplot(data = dat.good) +
+  geom_smooth(aes(x = age, y = pos3), color = "green") +
+  geom_smooth(aes(x = age, y = neg3), color = "red") +
+  labs(x = "Age", y = "Rating", title = "Question 3") +
+  scale_y_continuous(limits = c(2, 4.5)) +
+  theme_minimal())
+```
+
+```{r}
+diff = tibble(age = unique(dat.good$age), q1 = rep(0, length(unique(dat.good$age))), q2 = rep(0, length(unique(dat.good$age))), q3 = rep(0, length(unique(dat.good$age))))
+
+for(age in unique(dat.good$age)){
+  diff$q1[diff$age == age] = mean(dat.good$pos1[dat.good$age == age], na.rm = TRUE) - mean(dat.good$neg1[dat.good$age == age], na.rm = TRUE)
+  diff$q2[diff$age == age] = mean(dat.good$pos2[dat.good$age == age], na.rm = TRUE) - mean(dat.good$neg2[dat.good$age == age], na.rm = TRUE)
+  diff$q3[diff$age == age] = mean(dat.good$pos3[dat.good$age == age], na.rm = TRUE) - mean(dat.good$neg3[dat.good$age == age], na.rm = TRUE)
+}
+
+ggplot(data = diff) +
+  geom_hline(yintercept = 0) +
+  geom_smooth(aes(x = age, y = q1), color = "blue", span = 0.5)+
+  geom_hline(aes(yintercept = mean(dat.good$pos1, na.rm = TRUE) - mean(dat.good$neg1, na.rm = TRUE)), color = "green") +
+  scale_y_continuous(limits = c(-2, 2)) +
+  labs(x = "Age", y = "Difference") +
+  theme_minimal() +
+ggplot(data = diff) +
+  geom_hline(yintercept = 0) +
+  geom_smooth(aes(x = age, y = q2, color = "Difference by Age"), span = 0.5)+
+  geom_hline(aes(yintercept = mean(dat.good$pos2, na.rm = TRUE) - mean(dat.good$neg2, na.rm = TRUE), color = "Average Difference")) +  
+  scale_y_continuous(limits = c(-2, 2)) +
+  scale_color_manual(values = c("Average Difference" = "green", "Difference by Age" = "blue")) +
+  labs(x = "Age", y = "Difference") +
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+ggplot(data = diff) +
+  geom_hline(yintercept = 0) +
+  geom_smooth(aes(x = age, y = q3), color = "blue", span = 0.5)+
+  geom_hline(aes(yintercept = mean(dat.good$pos3, na.rm = TRUE) - mean(dat.good$neg3, na.rm = TRUE)), color = "green") +  
+  scale_y_continuous(limits = c(-2, 2)) +
+  labs(x = "Age", y = "Difference") +
+  theme_minimal() 
+```
+
+The graphs above display the relationship between age, framing, and response. For question 1 the difference between the average response for positive framing and the average response for negative framing increases with age, signaling there may be an interaction between framing and age for drug efficacy. The same relationship is displayed for question 2 although with higher standard errors, signaling there may be the same interaction just weaker for the likelihood to stop drinking cocoa. For question 3 the interaction between age and framing is less clear, signaling there may or may not be an interaction at all for preference on chance choice.  
+
+```{r}
+ggpairs(dat.good, columns = c(9, 17), aes(color = treatment1, alpha = 0.5))
+ggpairs(dat.good, columns = c(9, 18), aes(color = treatment2, alpha = 0.5))
+ggpairs(dat.good, columns = c(9, 19), aes(color = treatment3, alpha = 0.5))
+```
+
+# Regression Analyses
+
+## Rating Drug Efficacy
+
+```{r}
+library(car)
+library(effectsize)
+mod.q1 = lm(pick1 ~ age * treatment1 + gender  + politics + partisan + ethnicity + education, dat.good)
+sum1 = summary(mod.q1)
+coefs = coef(mod.q1)
+plotResiduals(mod.q1)
+plotInfluence(mod.q1)
+trends.q1 = emtrends(mod.q1, "treatment1", "age")
+```
+
+The residual plot above shows that the errors are close to normal and their variance is centered around 0. The shape in the graph on the right seems to be due to the design of the expirement. The researchers asked participants to respond on a scale of $1-6$, this scale is very small and discrete, which does not allow for a large variance in the responses. This may cause problems with significance later due to the limited possible responses for each question.
+
+$$
+y_{\text{pick1}} = `{r} round(coefs[1], 3)`  `{r} round(coefs[2], 3)`x_{\text{age}} + `{r} round(coefs[3], 3)`I(x_{\text{treatment1}} = \text{pos1}) + `{r} round(coefs[25], 3)`x_{\text{age}}I(x_{\text{treatment1}} = \text{pos1}) + ... 
+$$
+
+```{r}
+#| echo: FALSE
+library(knitr)
+kable(sum1$coefficients[c(1:3, 23), ], digits = 4, caption = "Betas")
+kable(trends.q1, digits = 4, caption = "EMTrends")
+anova.q1 = car::Anova(mod.q1, type = 2)
+kable(omega_squared(anova.q1, partial = TRUE)[c(1, 2, 8), ], digits = 4, caption = "Effect Sizes")
+```
+
+The table above shows the results of the regression for our variables of interest. While the p-values for age and treatment1 are not significant, their interaction is. Using `emtrends()` to untangle the interaction between age and treatment1 shows with negative framing, as age increases the response decreases by $0.0051$, and with positive framing, as age increases the response increases by $0.0047$.  
+
+
+## Likelihood to Stop Drinking Cocoa
+
+```{r}
+mod.q2 = lm(pick2 ~ age * treatment2 + gender + politics + partisan + ethnicity + education, dat.good)
+sum2 = summary(mod.q2)
+coefs = coef(mod.q2)
+plotResiduals(mod.q2)
+plotInfluence(mod.q2)
+trends.q2 = emtrends(mod.q2, "treatment2", "age")
+```
+
+$$
+y_{\text{pick2}} = `{r} round(coefs[1], 3)`  `{r} round(coefs[2], 3)`x_{\text{age}} + `{r} round(coefs[3], 3)`I(x_{\text{treatment2}} = \text{pos2}) + `{r} round(coefs[25], 3)`x_{\text{age}}I(x_{\text{treatment2}} = \text{pos2}) + ... 
+$$
+
+```{r}
+#| echo: FALSE
+library(knitr)
+kable(sum2$coefficients[c(1:3, 23), ], digits = 4, caption = "Betas")
+kable(trends.q2, digits = 4, caption = "EMTrends")
+anova.q2 = car::Anova(mod.q2, type = 2)
+kable(omega_squared(anova.q2, partial = TRUE)[c(1, 2, 8), ], digits = 4, caption = "Effect Sizes")
+```
+
+The table above shows the results of the regression for our variables of interest. The p-values for age, treatment2, and their interaction are all statistically insignificant. Using `emtrends()` to examine the relationship between age and treatment2 shows that with negative framing, as age increases, the predicted response decreases by $0.0108$ per year, while with positive framing, the predicted response decreases by only $0.0018$ per year. Although positive framing appears to weaken the negative relationship between age and the response, the interaction is not statistically significant ($p=0.2911$). Additionally, the interaction has a very small partial omega-squared ($\omega_p^2=0.0002$), suggesting a negligible effect size.
+
+## Preference for Chance Choice
+
+```{r}
+mod.q3 = lm(pick3 ~ age * treatment3 + gender + politics + partisan + ethnicity + education, dat.good)
+sum3 = summary(mod.q3)
+coefs = coef(mod.q3)
+plotResiduals(mod.q3)
+plotInfluence(mod.q3)
+trends.q3 = emtrends(mod.q3, "treatment3", "age")
+```
+
+$$
+y_{\text{pick3}} = `{r} round(coefs[1], 3)`  `{r} round(coefs[2], 3)`x_{\text{age}} + `{r} round(coefs[3], 3)`I(x_{\text{treatment3}} = \text{pos3}) + `{r} round(coefs[25], 3)`x_{\text{age}}I(x_{\text{treatment3}} = \text{pos3}) + ... 
+$$
+```{r}
+#| echo: FALSE
+library(knitr)
+kable(sum3$coefficients[c(1:3, 23), ], digits = 4, caption = "Betas")
+kable(trends.q3, digits = 4, caption = "EMTrends")
+anova.q3 = car::Anova(mod.q3, type = 2)
+kable(omega_squared(anova.q3, partial = TRUE)[c(1, 2, 8), ], digits = 4, caption = "Effect Sizes")
+```
+
+The table above shows the results of the regression for our variables of interest. While the p-value for age is statistically significant ($p=0.0410$), the p-values for treatment3 and its interaction with age are not. Using `emtrends()` to examine the relationship between age and treatment3 shows that with negative framing, as age increases, the predicted response increases by $0.0142$ per year, while with positive framing, the predicted response decreases slightly by $0.0011$ per year. Although positive framing appears to reverse the positive relationship between age and the response, the interaction is not statistically significant ($p=0.1168$). Additionally, the interaction has a very small partial omega-squared ($\omega_p^2=0.0025$), suggesting a negligible effect size.
+
+# Discussion
+
+## Discussion
+
+The results from the three scenarios showed that there may be an interaction between age and the framing of a question, however, only Scenario 1 showed a statistically significant interaction between age and treatment, suggesting that age may moderate the effect of framing in certain contexts but not consistently across all three scenarios.
+
+In Scenario 1, perceptions of drug efficacy, the interaction between age and framing was statistically significant ($p=0.0475$). With negative framing, older respondents tended to rate the drug less favorably, while under positive framing, older respondents tended to rate it more favorably. This suggests that positive framing may become more influential in perceptions of drug efficacy as age increases. However, the interaction had a small effect size ($\omega_p^2\approx0.0051$), indicating that the relationship was relatively weak.
+
+In Scenario 2, which examined willingness to continue drinking hot cocoa despite potential health risks, both framing conditions showed a negative relationship between age and the likelihood of continuing consumption. This relationship was stronger under negative framing, suggesting that older respondents may be more inclined to stop drinking hot cocoa when presented with information emphasizing increased cancer risk. However, the interaction was not statistically significant ($p=0.2911$), providing insufficient evidence that framing changes the relationship between age and willingness to continue drinking hot cocoa.
+
+In Scenario 3, which examined preferences between safe and risky choices, age had a statistically significant positive relationship with preference for the risky option under negative framing ($p=0.0410$). Under positive framing, the estimated relationship between age and risk preference was slightly negative. This pattern suggests that older respondents may become more willing to choose the risky option when outcomes are framed in terms of lives lost rather than lives saved. However, the interaction was not statistically significant ($p=0.1168$), meaning there is insufficient evidence that the relationship between age and risk preference differs across framing conditions.
