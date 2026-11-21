@@ -239,6 +239,177 @@
     ]
   },
   {
+    "objectID": "Math354/HW5/HW5.html#overview-analytical-strategy",
+    "href": "Math354/HW5/HW5.html#overview-analytical-strategy",
+    "title": "Homework 5 – Regression",
+    "section": "1.1 Overview & Analytical Strategy",
+    "text": "1.1 Overview & Analytical Strategy\nTo evaluate whether framing effects strengthen as adults age—and to identify whether age-related divergence is driven by positive or negative wording—we fit three multiple linear regression models (one per scenario):\n\\[Y_i = \\beta_0 + \\beta_1 \\text{Age}_i + \\beta_2 \\text{Frame}_i + \\beta_3 (\\text{Age}_i \\times \\text{Frame}_i) + \\mathbf{X}_i\\boldsymbol{\\gamma} + \\epsilon_i\\]\nwhere \\(\\mathbf{X}_i\\) adjusts for simultaneous linear differences across gender, ethnicity, education level, and political affiliation.\n\nInteraction (\\(\\beta_3\\)): Tests whether the gap between Positive and Negative framing widens with age.\nSimple Slopes: Evaluates the age slope separately within the Positive frame and the Negative frame to determine which framing drives the change.\nJohnson-Neyman (J-N) Analysis: Identifies the exact age threshold (“onset”) at which the conditional difference between Positive and Negative frames becomes statistically significant (\\(p &lt; .05\\)).\n\nProvides a good plan and overview of what it is going to do.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#data-import-and-cleaning",
+    "href": "Math354/HW5/HW5.html#data-import-and-cleaning",
+    "title": "Homework 5 – Regression",
+    "section": "1.2 Data Import and Cleaning",
+    "text": "1.2 Data Import and Cleaning\nNote that HW4Data.csv contains Qualtrics metadata in Row 1 (short variable names) followed by participant responses, as well as trailing empty rows (N = 696 valid respondents out of 842 non-header rows).\n\n\n\nCode\nlibrary(tidyverse)\nlibrary(broom)\nlibrary(emmeans)\nlibrary(interactions)\nlibrary(knitr)\n\n# Read raw file\nraw_df &lt;- read_csv(\"HW4Data.csv\", show_col_types = FALSE)\n\n# Prof had to remove empty columns to fix an issue with filter() later\n# currently column names are in the first row. Remove empty columns.\nraw_df_sub &lt;- raw_df[, c(!is.na(raw_df[1,]))] \n\n# Extract clean variable names and assign to data frame\nclean_names &lt;- as.character(unlist(raw_df_sub[1, ])) |&gt; str_trim()\n\ndf &lt;- raw_df_sub[-1, ]\nnames(df) &lt;- make.unique(clean_names)\n\ndf_clean &lt;- df |&gt;\n  filter(!is.na(responseID), responseID != \"\") |&gt;\n  mutate(\n    age = as.numeric(age),\n    pick1 = as.numeric(pick1),\n    pick2 = as.numeric(pick2),\n    pick3 = as.numeric(pick3),\n    # Standardize frame labels with Negative as reference level\n    frame1 = factor(if_else(str_starts(treatment1, \"pos\"), \"Positive\", \"Negative\"),\n                    levels = c(\"Negative\", \"Positive\")),\n    frame2 = factor(if_else(str_starts(treatment2, \"pos\"), \"Positive\", \"Negative\"),\n                    levels = c(\"Negative\", \"Positive\")),\n    frame3 = factor(if_else(str_starts(treatment3, \"pos\"), \"Positive\", \"Negative\"),\n                    levels = c(\"Negative\", \"Positive\")),\n    gender = factor(gender),\n    ethnicity = factor(ethnicity),\n    education = factor(education),\n    politics = factor(politics)\n  )\n\ncat(\"Total valid respondents:\", nrow(df_clean), \"\\n\")\n\n\nTotal valid respondents: 696 \n\n\nCode\ncat(\"Age range:\", min(df_clean$age, na.rm = TRUE), \"to\", max(df_clean$age, na.rm = TRUE), \"\\n\")\n\n\nAge range: 18 to 71 \n\n\n\nI like that Gemini cleans the column names and assigns the residual names in the data frame from qualtrics to column names. It also does a good job at removing the extra empty columns.\nGemini only considers if “responseID” is missing but does not consider the captcha, attention checks or if there are missing data anywhere else.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#covariate-adjusted-regression-models",
+    "href": "Math354/HW5/HW5.html#covariate-adjusted-regression-models",
+    "title": "Homework 5 – Regression",
+    "section": "1.3 Covariate-Adjusted Regression Models",
+    "text": "1.3 Covariate-Adjusted Regression Models\n\n\n\nCode\n# Model 1: Drug Efficacy (1 = very bad, 6 = very good)\nm1 &lt;- lm(pick1 ~ age * frame1 + gender + ethnicity + education + politics, data = df_clean)\n\n# Model 2: Hot Cocoa & Cadmium Risk (1 = surely stop, 6 = surely continue)\nm2 &lt;- lm(pick2 ~ age * frame2 + gender + ethnicity + education + politics, data = df_clean)\n\n# Model 3: Disease Outbreak / Chance Choice (1 = surely safe, 6 = surely risky)\nm3 &lt;- lm(pick3 ~ age * frame3 + gender + ethnicity + education + politics, data = df_clean)\n\n# Helper function to display focal interaction terms\nextract_focal &lt;- function(model, scenario_label) {\n  tidy(model, conf.int = TRUE) |&gt;\n    filter(str_detect(term, \"^(Intercept|age|frame)\")) |&gt;\n    mutate(Scenario = scenario_label) |&gt;\n    select(Scenario, term, estimate, std.error, statistic, p.value, conf.low, conf.high)\n}\n\nbind_rows(\n  extract_focal(m1, \"Scenario 1: Drug Efficacy\"),\n  extract_focal(m2, \"Scenario 2: Hot Cocoa\"),\n  extract_focal(m3, \"Scenario 3: Chance Choice\")\n) |&gt;\n  kable(digits = 4, caption = \"Focal Regression Estimates (Adjusting for Demographics)\")\n\n\n\nFocal Regression Estimates (Adjusting for Demographics)\n\n\n\n\n\n\n\n\n\n\n\n\nScenario\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\nScenario 1: Drug Efficacy\nage\n-0.0055\n0.0030\n-1.8061\n0.0713\n-0.0115\n0.0005\n\n\nScenario 1: Drug Efficacy\nframe1Positive\n0.3429\n0.1931\n1.7759\n0.0762\n-0.0362\n0.7221\n\n\nScenario 1: Drug Efficacy\nage:frame1Positive\n0.0078\n0.0045\n1.7123\n0.0873\n-0.0011\n0.0166\n\n\nScenario 2: Hot Cocoa\nage\n-0.0128\n0.0056\n-2.2929\n0.0222\n-0.0238\n-0.0018\n\n\nScenario 2: Hot Cocoa\nframe2Positive\n-0.0255\n0.3361\n-0.0759\n0.9396\n-0.6854\n0.6344\n\n\nScenario 2: Hot Cocoa\nage:frame2Positive\n0.0126\n0.0079\n1.5953\n0.1111\n-0.0029\n0.0280\n\n\nScenario 3: Chance Choice\nage\n0.0170\n0.0063\n2.6920\n0.0073\n0.0046\n0.0293\n\n\nScenario 3: Chance Choice\nframe3Positive\n0.1933\n0.3847\n0.5025\n0.6155\n-0.5621\n0.9488\n\n\nScenario 3: Chance Choice\nage:frame3Positive\n-0.0194\n0.0090\n-2.1527\n0.0317\n-0.0371\n-0.0017",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#simple-slopes-positive-vs.-negative-framing-drivers",
+    "href": "Math354/HW5/HW5.html#simple-slopes-positive-vs.-negative-framing-drivers",
+    "title": "Homework 5 – Regression",
+    "section": "1.4 Simple Slopes: Positive vs. Negative Framing Drivers",
+    "text": "1.4 Simple Slopes: Positive vs. Negative Framing Drivers\nTo test whether age-related shifts are driven by reactions to the positive or negative frame, we estimate the linear age trend (\\(\\partial Y / \\partial \\text{Age}\\)) separately within each framing condition.\n\n\n\nCode\nslopes_s1 &lt;- emtrends(m1, ~ frame1, var = \"age\") |&gt; summary(infer = TRUE) |&gt; mutate(Scenario = \"Scenario 1: Drug Efficacy\") |&gt; rename(Frame = frame1)\nslopes_s2 &lt;- emtrends(m2, ~ frame2, var = \"age\") |&gt; summary(infer = TRUE) |&gt; mutate(Scenario = \"Scenario 2: Hot Cocoa\") |&gt; rename(Frame = frame2)\nslopes_s3 &lt;- emtrends(m3, ~ frame3, var = \"age\") |&gt; summary(infer = TRUE) |&gt; mutate(Scenario = \"Scenario 3: Chance Choice\") |&gt; rename(Frame = frame3)\n\nbind_rows(slopes_s1, slopes_s2, slopes_s3) |&gt;\n  select(Scenario, Frame, age.trend, SE, df, lower.CL, upper.CL, t.ratio, p.value) |&gt;\n  kable(digits = 4, caption = \"Age Slopes Within Positive and Negative Frames\")\n\n\n\nAge Slopes Within Positive and Negative Frames\n\n\n\n\n\n\n\n\n\n\n\n\n\nScenario\nFrame\nage.trend\nSE\ndf\nlower.CL\nupper.CL\nt.ratio\np.value\n\n\n\n\nScenario 1: Drug Efficacy\nNegative\n-0.0055\n0.0030\n673\n-0.0115\n0.0005\n-1.8061\n0.0713\n\n\nScenario 1: Drug Efficacy\nPositive\n0.0023\n0.0034\n673\n-0.0044\n0.0089\n0.6628\n0.5077\n\n\nScenario 2: Hot Cocoa\nNegative\n-0.0128\n0.0056\n673\n-0.0238\n-0.0018\n-2.2929\n0.0222\n\n\nScenario 2: Hot Cocoa\nPositive\n-0.0003\n0.0056\n673\n-0.0113\n0.0108\n-0.0482\n0.9616\n\n\nScenario 3: Chance Choice\nNegative\n0.0170\n0.0063\n672\n0.0046\n0.0293\n2.6920\n0.0073\n\n\nScenario 3: Chance Choice\nPositive\n-0.0025\n0.0065\n672\n-0.0153\n0.0104\n-0.3747\n0.7080",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#johnson-neyman-analysis-age-of-onset",
+    "href": "Math354/HW5/HW5.html#johnson-neyman-analysis-age-of-onset",
+    "title": "Homework 5 – Regression",
+    "section": "1.5 Johnson-Neyman Analysis: Age of Onset",
+    "text": "1.5 Johnson-Neyman Analysis: Age of Onset\nUsing the Johnson-Neyman technique (interactions::johnson_neyman), we identify the exact age at which the conditional difference between Positive and Negative frames crosses the \\(\\alpha = .05\\) significance threshold.\n\n\n\nCode\n# Prof had to correct argument order so pred is age (continuous), and modx is the frame (binary)\n# This is technically not \"right\" but it does \"work\" for binary predictors as long as it is fit\n# as a numerical predictor.\ndf_clean_jn &lt;- df_clean |&gt; mutate(frame1=as.numeric(frame1)-1, # Negative = 1-1, # Positive = 2-1\n                                  frame2=as.numeric(frame2)-1,\n                                  frame3=as.numeric(frame3)-1)\n# Model 1: Drug Efficacy (1 = very bad, 6 = very good)\nm1_jn &lt;- lm(pick1 ~ age * frame1 + gender + ethnicity + education + politics, data = df_clean_jn)\n# Model 2: Hot Cocoa & Cadmium Risk (1 = surely stop, 6 = surely continue)\nm2_jn &lt;- lm(pick2 ~ age * frame2 + gender + ethnicity + education + politics, data = df_clean_jn)\n# Model 3: Disease Outbreak / Chance Choice (1 = surely safe, 6 = surely risky)\nm3_jn &lt;- lm(pick3 ~ age * frame3 + gender + ethnicity + education + politics, data = df_clean_jn)\n\njn1 &lt;- johnson_neyman(m1_jn, pred = \"age\", modx = \"frame1\", alpha = 0.05)\njn2 &lt;- johnson_neyman(m2_jn, pred = \"age\", modx = \"frame2\", alpha = 0.05)\njn3 &lt;- johnson_neyman(m3_jn, pred = \"age\", modx = \"frame3\", alpha = 0.05)\n\nprint(jn1)\n\n\nJOHNSON-NEYMAN INTERVAL\n\nThe Johnson-Neyman interval could not be found. Is the p value for your\ninteraction term below the specified alpha?\n\n\n\n\n\n\n\n\n\nCode\nprint(jn2)\n\n\nJOHNSON-NEYMAN INTERVAL\n\nWhen frame2 is INSIDE the interval [-1.42, 0.38], the slope of age is p &lt;\n.05.\n\nNote: The range of observed values of frame2 is [0.00, 1.00]\n\n\n\n\n\n\n\n\n\nCode\nprint(jn3)\n\n\nJOHNSON-NEYMAN INTERVAL\n\nWhen frame3 is OUTSIDE the interval [0.41, 5.23], the slope of age is p &lt;\n.05.\n\nNote: The range of observed values of frame3 is [0.00, 1.00]\n\n\n\n\n\n\n\n\n\nCode\njn1$plot + labs(title = \"Scenario 1: Drug Efficacy (Framing Effect Across Age)\", x = \"Age (Years)\")\n\n\n\n\n\n\n\n\n\nCode\njn2$plot + labs(title = \"Scenario 2: Hot Cocoa (Framing Effect Across Age)\", x = \"Age (Years)\")\n\n\n\n\n\n\n\n\n\nCode\njn3$plot + labs(title = \"Scenario 3: Chance Choice (Framing Effect Across Age)\", x = \"Age (Years)\")",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#visualization-of-predicted-trajectories",
+    "href": "Math354/HW5/HW5.html#visualization-of-predicted-trajectories",
+    "title": "Homework 5 – Regression",
+    "section": "1.6 Visualization of Predicted Trajectories",
+    "text": "1.6 Visualization of Predicted Trajectories\n\n\n\nCode\n# Generate adjusted marginal predictions across age (18 to 71), increasing rg.limit past 105,840\nage_grid &lt;- seq(18, 71, by = 1)\n\np1 &lt;- emmip(m1, frame1 ~ age, at = list(age = age_grid), rg.limit = 150000, CIs = TRUE, plotit = FALSE) |&gt;\n  mutate(Scenario = \"1. Drug Efficacy\\n(1 = Very Bad, 6 = Very Good)\") |&gt; rename(Frame = frame1)\np2 &lt;- emmip(m2, frame2 ~ age, at = list(age = age_grid), rg.limit = 150000, CIs = TRUE, plotit = FALSE) |&gt;\n  mutate(Scenario = \"2. Hot Cocoa Continuation\\n(1 = Surely Stop, 6 = Surely Continue)\") |&gt; rename(Frame = frame2)\np3 &lt;- emmip(m3, frame3 ~ age, at = list(age = age_grid), rg.limit = 150000, CIs = TRUE, plotit = FALSE) |&gt;\n  mutate(Scenario = \"3. Chance Choice\\n(1 = Surely Safe, 6 = Surely Risky)\") |&gt; rename(Frame = frame3)\n\nbind_rows(p1, p2, p3) |&gt;\n  ggplot(aes(x = age, y = yvar, color = Frame, fill = Frame)) +\n  geom_ribbon(aes(ymin = LCL, ymax = UCL), alpha = 0.15, color = NA) +\n  geom_line(linewidth = 1.1) +\n  facet_wrap(~ Scenario, scales = \"free_y\") +\n  scale_color_manual(values = c(\"Negative\" = \"#D55E00\", \"Positive\" = \"#0072B2\")) +\n  scale_fill_manual(values = c(\"Negative\" = \"#D55E00\", \"Positive\" = \"#0072B2\")) +\n  labs(\n    x = \"Age (Years)\",\n    y = \"Adjusted Mean Rating (1–6 Scale)\",\n    title = \"Framing Effects Across the Adult Lifespan\",\n    subtitle = \"Adjusted for gender, ethnicity, education level, and political affiliation (95% CIs)\"\n  ) +\n  theme_minimal(base_size = 12) +\n  theme(legend.position = \"bottom\")",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#summary-of-empirical-findings-from-hw4data.csv",
+    "href": "Math354/HW5/HW5.html#summary-of-empirical-findings-from-hw4data.csv",
+    "title": "Homework 5 – Regression",
+    "section": "1.7 Summary of Empirical Findings from HW4Data.csv",
+    "text": "1.7 Summary of Empirical Findings from HW4Data.csv\nWhen rendered on HW4Data.csv, the code produces the following results across the three scenarios:\n\n\n\n\n\n\n\n\n\n\nScenario\n\\(\\text{Age} \\times \\text{Frame}\\) Interaction (\\(\\beta_3\\))\nAge Slope: Negative Frame\nAge Slope: Positive Frame\nAge of Onset (J-N Threshold, \\(p &lt; .05\\))\n\n\n\n\n1. Drug Efficacy (\\(n = 696\\))\n\\(b = +0.0078, p = 0.087\\)\n\\(b = -0.0055, p = 0.071\\)\n\\(b = +0.0023, p = 0.508\\)\nAll adult ages (\\(\\ge 18\\)) (J-N lower bound \\(= 2.2\\) yrs)\n\n\n2. Hot Cocoa (\\(n = 696\\))\n\\(b = +0.0126, p = 0.111\\)\n\\(b = -0.0128, p = 0.022\\)\n\\(b = -0.0003, p = 0.962\\)\nAge 25.9 years (significant for ages \\(\\ge 25.9\\))\n\n\n3. Chance Choice (\\(n = 695\\))\n\\(b = -0.0194, p = 0.032\\)\n\\(b = +0.0170, p = 0.007\\)\n\\(b = -0.0025, p = 0.708\\)\nAge 26.9 years (significant for ages \\(\\ge 26.9\\))\n\n\n\n\nDoes framing influence grow with age? Yes—the framing gap widens with age in all three scenarios, reaching statistical significance in Scenario 3 (Chance Choice) (\\(p = 0.032\\)) and showing a marginal trend in the same direction in Scenario 1 (\\(p = 0.087\\)) and Scenario 2 (\\(p = 0.111\\)).\nPositive vs. Negative driver: Across every scenario, changes are driven entirely by the negative framing. Ratings in the positive frame remain flat across age (\\(p &gt; 0.50\\) in all three models), whereas older adults respond significantly more strongly to negative framings (becoming more likely to stop drinking cocoa when warned of increased cancer risk, \\(p = 0.022\\), and more risk-seeking when outcomes are framed as lives lost, \\(p = 0.007\\)).\nAge of onset: In Scenario 1, the framing effect is already significant at the youngest observed age (\\(18\\)). In Scenarios 2 and 3, younger adults (ages \\(18\\text{–}25\\)) show no statistically significant framing bias, with the framing effect emerging at age 25.9 (Scenario 2) and age 26.9 (Scenario 3).",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#part-a",
+    "href": "Math354/HW5/HW5.html#part-a",
+    "title": "Homework 5 – Regression",
+    "section": "3.1 Part a",
+    "text": "3.1 Part a\nPlot the power analysis I conducted above. Ensure to highlight Type I error, Type II error region, and Power. Note this should be similar to the one sample \\(t\\)-test.\n\n\n\nCode\nt = seq(-3.5, 6.5, length.out = 10000)\nt0 = dt(t, n.small - p)\nncp = sqrt(f2.small) * sqrt(n.small)\nt1 = dt(t, n.small - p, ncp)\n\nt.dat = tibble(t = t, null = t0, alt = t1)\ncrit.t = qt(0.975, n.small - p)\n\nggplot(data = t.dat) +\n  geom_line(aes(x = t, y = null, color = \"Null Distribution\")) +\n  geom_line(aes(x = t, y = alt, color = \"Alternative Distribution\")) +\n  geom_ribbon(aes(x = t, ymin = 0, ymax = ifelse(t &gt; crit.t, alt, 0), color = \"Power\"), linewidth = 0, fill = \"purple\", alpha = 0.3) +\n  geom_ribbon(aes(x = t, ymin = 0, ymax = ifelse(t &gt; crit.t | t &lt; -crit.t, null, 0), color = \"Type 1 Error\"), linewidth = 0, fill = \"red\", alpha = 0.3) +\n  geom_ribbon(aes(x = t, ymin = 0, ymax = ifelse(t &lt; crit.t, alt, 0), color = \"Type 2 Error\"), linewidth = 0, fill = \"yellow\", alpha = 0.3) +\n  geom_hline(yintercept = 0) +\n  labs(title = \"Power Analysis\", subtitle = \"n = 396, Cohen's f² = 0.02, α = 0.05\", x = \"t\", y = 'density') +\n  theme_minimal()",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#part-b",
+    "href": "Math354/HW5/HW5.html#part-b",
+    "title": "Homework 5 – Regression",
+    "section": "3.2 Part b",
+    "text": "3.2 Part b\nTo see the multicollinearity penalty directly, hold every parameter of a multiple regression model constant except the correlation between predictors.\nSuppose we aim to model \\[Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\epsilon\\] where \\(\\epsilon \\sim \\mathcal{N}(0, 1)\\), \\(\\beta_1 = 0.25\\) is the target effect, \\(\\beta_2 = 0.30\\), and \\(X_1, X_2 \\sim \\mathcal{N}(0, 1)\\) with \\(\\text{Cor}(X_1, X_2) = \\rho\\). In this setting, \\(R_1^2 = \\rho^2\\) and \\(\\text{VIF}_1 = \\frac{1}{1 - \\rho^2}\\).\nWrite \\(f^2\\) out in terms of \\(VIF\\). What happens to \\(f^2\\) as we alter the \\(VIF\\) through \\(\\rho\\)?\n\\[f^2 = \\frac{R^2_{\\text{full}} - R^2_{\\text{reduced}}}{1 - R^2_{\\text{full}}} = \\frac{\\beta_j^2 \\, \\sigma_{X_j}^2 (1 - R_j^2)}{\\sigma^2}.\\] \\[f^2 = \\frac{0.25^2\\times1(1-\\rho^2)}{1}\\newline\n  f^2 = \\frac{1}{16}\\times\\frac{(1-\\rho^2)}{1}\\newline\n  f^2 = \\frac{1}{16} \\times\\frac{1}{VIF}\\]\nThrough substitution, we can see that \\(f^2\\) is inversely related to VIF, meaning that as VIF increases, \\(f^2\\) decreases. VIF increases as the absolute value of \\(\\rho\\) increases, so stronger correlation between predictors results in a smaller effect size. This makes sense because as predictors become more correlated, they provide less unique information about the response variable, making it harder to detect the effect of an individual predictor.\nConduct a power analysis to determine the required sample size \\(n\\) to achieve \\(80\\%\\) power for inference on \\(\\beta_1\\) for \\(\\text{VIF}\\) values of 1.0, 1.5, 2.0, 5.0, and 10. What happens as \\(\\text{VIF}\\) increases?\n\n\n\nCode\nlibrary(pwr)\n\np &lt;- 3   # Total number of coefficients in the model (p-1 predictors)\nvif = c(1.0, 1.5, 2.0, 5.0, 10)\nf2 = 1/(16*vif)\nres = rep(0,5)\n\nfor (i in 1:length(res)){\n  res[i] &lt;- ceiling(pwr.f2.test(u = 1,              # Suppose our research was interested in 1 coefficient\n                         f2 = f2[i],      # Cohen's f^2\n                         sig.level = 0.05,   # alpha = 0.05 (two-sided via F = T^2)\n                         power = 0.80)$v - p)       # Desired power\n  }\n\n(res)\n\n\n[1]  123  186  249  625 1253",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#part-c",
+    "href": "Math354/HW5/HW5.html#part-c",
+    "title": "Homework 5 – Regression",
+    "section": "3.3 Part c",
+    "text": "3.3 Part c\nNow, suppose we’re doing something fun like an interaction model. \\[Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\beta_3 (X_1 X_2) + \\epsilon\\] where \\(\\epsilon \\sim \\mathcal{N}(0, \\sigma^2).\\) The \\(T\\) statistic for the test still follows a non-central \\(t\\)-distribution \\[T = \\frac{\\hat{\\beta}_3-0}{\\text{SE}(\\hat{\\beta}_3)} \\sim t(\\beta_\\Delta, v=n - \\underbrace{p}_{\\beta{s}})\\] where \\[\\beta_\\Delta = \\frac{\\beta_3 \\, \\sigma_{X_1 X_2} \\sqrt{1 - R_{X_1 X_2}^2}}{\\sigma} \\sqrt{n} = \\pm f \\sqrt{n}\\] where \\(\\sigma^2_{X_1 X_2} = \\text{Var}(X_1 X_2)\\) and \\(R_{X_1 X_2}^2 = R^2\\) from the regression: \\[(X_1 X_2) = \\gamma_0 + \\gamma_1 X_1 + \\gamma_2 X_2 + \\epsilon.\\] This makes \\[f^2 = \\frac{\\beta_3^2 \\, \\sigma_{X_1 X_2}^2 (1 - R_{X_1 X_2}^2)}{\\sigma^2}.\\]\nSuppose both predictors are binary: \\[\\begin{align*}\nX_{1i} \\sim& \\text{Bernoulli}(0.50)\\\\\nX_{2i} \\sim& \\text{Bernoulli}(0.50)\\\\\n\\end{align*}\\] and \\(\\beta_0=\\beta_1=\\beta_2=0\\), \\(\\beta_3=0.50\\), and \\(\\sigma=1\\).\nAs a basis for comparison, conduct a simple power analysis that ignores the interaction (e.g., \\(Y = \\beta_0 + \\beta_1 X_1\\)), where \\(\\beta_1=0.50\\).\n\n\n\nCode\np &lt;- 2   # Total number of coefficients in the model (p-1 predictors)\nx = 0.5\nvar = x*(1-x)\nsigma = sqrt(var)\nf2 = (x^2 * sigma^2)\n\n\nres &lt;- pwr.f2.test(u = 1,              # Suppose our research was interested in 1 coefficient\n                         f2 = f2,      # Cohen's f^2\n                         sig.level = 0.05,   # alpha = 0.05 (two-sided via F = T^2)\n                         power = 0.80)       # Desired power\n\n(ceiling(res$v + p))\n\n\n[1] 128\n\n\n\nNext, conduct a power analysis that ignores the third term is an interaction (e.g., \\(Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\beta_3 X_3\\)), where \\(\\beta_3=0.50\\).\n\n\n\nCode\np = 4\n\nx = 0.5\nvar = x*(1-x)\nsigma = sqrt(var)\nf2 = (x^2 * sigma^2)\n\nres &lt;- pwr.f2.test(u = 1,              # Suppose our research was interested in 1 coefficient\n                         f2 = f2,      # Cohen's f^2\n                         sig.level = 0.05,   # alpha = 0.05 (two-sided via F = T^2)\n                         power = 0.80)       # Desired power\n\n\n(n = ceiling(res$v + p))\n\n\n[1] 130\n\n\n\nAssess whether what we did in the previous step worked. Conduct a simulation for the proposed interaction model where \\(\\beta_3=0.50\\). At each iteration, generate data of the size recommended in part (c) and test the interaction coefficient. What is the empirical power?\n\n\n\nCode\nR = 1000\npvals = rep(0, R)\n\nfor (i in 1:R){\n  x1 = rbinom(n, 1, x)\n  x2 = rbinom(n, 1, x)\n\n  y = 0.5 * x1 * x2 + rnorm(n, sd = 1)\n  mod = lm(y ~ x1 * x2)\n  p = summary(mod)$coefficients[4, 4]\n  pvals[i] = p\n}\n\n(power = mean(pvals &lt; 0.05))\n\n\n[1] 0.278",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "Math354/HW5/HW5.html#part-d",
+    "href": "Math354/HW5/HW5.html#part-d",
+    "title": "Homework 5 – Regression",
+    "section": "3.4 Part d",
+    "text": "3.4 Part d\nCompute the variance of the product, noting here that \\((X_1 X_2) \\sim \\text{Bernoulli}(0.25)\\).\n\n\n\nCode\np = 0.25\n(var = p*(1-p))\n\n\n[1] 0.1875\n\n\n\nCreate a dataset of \\(n=4\\) containing all possible combinations of \\(X_1\\) and \\(X_2\\) with \\((X_1X_2)\\), then fit the regression model predicting the interaction with the unique terms. Report the \\(R^2\\).\n\n\n\nCode\nx1 = c(0, 1, 0, 1)\nx2 = c(0, 0, 1, 1)\ninteraction = c(0, 0, 0, 1)\n\nmod = lm(interaction ~ x1 +x2)\nsum = summary(mod)\nr2 = sum$r.squared\n(paste0(\"R-squared: \", r2))\n\n\n[1] \"R-squared: 0.666666666666667\"\n\n\n\nNext, conduct a power analysis that does not ignore that the third term is an interaction (e.g., \\(Y = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + \\beta_3 X_3\\)), where \\(\\beta_3=0.50\\). You can do this using pwr.f2.test() and specifying the effect size using the anticipated coefficient and the values we just calculated: \\[\\beta_3^2 \\sigma^2_{X_1 X_2}(1 - R^2_{X_1 X_2})\\]\n\n\n\nCode\np = 4\n\nx = 0.5\nvar = 0.25*(1-0.25)\nsigma = sqrt(var)\nf2 = (x^2 * sigma^2)*(1-r2)\n\nres &lt;- pwr.f2.test(u = 1,              # Suppose our research was interested in 1 coefficient\n                         f2 = f2,      # Cohen's f^2\n                         sig.level = 0.05,   # alpha = 0.05 (two-sided via F = T^2)\n                         power = 0.80)       # Desired power\n\n\n(n = ceiling(res$v + p))\n\n\n[1] 507\n\n\n\nHow would this change if we specified \\(X_1\\) and \\(X_2\\) as being independently drawn from a Bernoulli(\\(0.2\\)) distribution? A Normal(0,1)?\n\n\n\nCode\np = 4\n\nx1 = c(0, 1, 0, 1)\nx2 = c(0, 0, 1, 1)\ninteraction = c(0, 0, 0, 1)\nprob = 0.2\nprobdat = dbinom(x1, 1, prob) *\n          dbinom(x2, 1, prob)\n\nmod &lt;- lm(\n  interaction ~ x1 + x2,\n  weights = probdat\n)\nr2 = summary(mod)$r.squared\n\nx = 0.5\nvar = (prob^2)*(1-prob^2)\nsigma = sqrt(var)\nf2 = (x^2 * sigma^2)*(1-r2)\n\nres &lt;- pwr.f2.test(u = 1,              # Suppose our research was interested in 1 coefficient\n                         f2 = f2,      # Cohen's f^2\n                         sig.level = 0.05,   # alpha = 0.05 (two-sided via F = T^2)\n                         power = 0.80)       # Desired power\n\n\nn = ceiling(res$v + p)\n(paste0(\"Bernoulli(0.2): \", n))\n\n\n[1] \"Bernoulli(0.2): 1231\"\n\n\n\n\n\n\nCode\np = 4\nr2 = 0\nx = 0.5\nsigma = 1\nf2 = (x^2 * sigma^2)*(1-r2)\n\nres &lt;- pwr.f2.test(u = 1,              # Suppose our research was interested in 1 coefficient\n                         f2 = f2,      # Cohen's f^2\n                         sig.level = 0.05,   # alpha = 0.05 (two-sided via F = T^2)\n                         power = 0.80)       # Desired power\n\n\nn = ceiling(res$v + p)\n(paste0(\"Normal(0, 1): \", n))\n\n\n[1] \"Normal(0, 1): 36\"",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 5: Regression 2"
+    ]
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About Me",
+    "section": "",
+    "text": "I am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.",
+    "crumbs": [
+      " About"
+    ]
+  },
+  {
+    "objectID": "about.html#education",
+    "href": "about.html#education",
+    "title": "About Me",
+    "section": "",
+    "text": "I am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.",
+    "crumbs": [
+      " About"
+    ]
+  },
+  {
+    "objectID": "about.html#technical-skills",
+    "href": "about.html#technical-skills",
+    "title": "About Me",
+    "section": "Technical Skills",
+    "text": "Technical Skills\n\nLanguages: R, Python, Java, C\nTools: Positron, Quarto, Git/GitHub, LaTeX",
+    "crumbs": [
+      " About"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
+    "objectID": "index.html#welcome",
+    "href": "index.html#welcome",
+    "title": "Academic Portfolio",
+    "section": "",
+    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
+    "crumbs": [
+      " Home"
+    ]
+  },
+  {
     "objectID": "Math354/HW2/HW2.html#part-a",
     "href": "Math354/HW2/HW2.html#part-a",
     "title": "Homework 2 – k Sample Inference",
@@ -360,61 +531,33 @@
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Academic Portfolio",
-    "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
-    "crumbs": [
-      " Home"
-    ]
-  },
-  {
-    "objectID": "index.html#welcome",
-    "href": "index.html#welcome",
-    "title": "Academic Portfolio",
-    "section": "",
-    "text": "Welcome to my portfolio website! Here you will find write-ups and analysis projects completed across my courses:\n\nComputational Statistics (MATH 240): R programming, data wrangling, and simulation models.\n\nData Analysis I (MATH 354): Applied statistical inference, hypothesis testing, and modeling.\n\nUse the sidebar menu to navigate through my coursework.",
-    "crumbs": [
-      " Home"
-    ]
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About Me",
-    "section": "",
-    "text": "I am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.",
-    "crumbs": [
-      " About"
-    ]
-  },
-  {
-    "objectID": "about.html#education",
-    "href": "about.html#education",
-    "title": "About Me",
-    "section": "",
-    "text": "I am a student at Colgate University studying Statistics and Data Science. My anticipated graduation date is 2028.",
-    "crumbs": [
-      " About"
-    ]
-  },
-  {
-    "objectID": "about.html#technical-skills",
-    "href": "about.html#technical-skills",
-    "title": "About Me",
-    "section": "Technical Skills",
-    "text": "Technical Skills\n\nLanguages: R, Python, Java, C\nTools: Positron, Quarto, Git/GitHub, LaTeX",
-    "crumbs": [
-      " About"
-    ]
-  },
-  {
     "objectID": "Math354/HW4/HW4.html",
     "href": "Math354/HW4/HW4.html",
     "title": "Homework 4 – Regression Consult",
     "section": "",
     "text": "When people make decisions, their choices are often swayed by how information is presented. This is often described as “the framing effect.” One example of this, is how commercials describe new medications. As an example, Nereus (tradipitant), a new drug for motion-induced vomiting like sea-sickness, is marketed with a positive frame as reducing vomiting incidence from 44% to 18% (a reduction of 60%). This marketing makes it seem more effective than a negative frame that says just 18% of patients still experienced vomiting, even though both statements are true.\nXu (2024) aimed to evaluate whether older adults are more or less vulnerable to framing than younger adults. They collected a sample of 696 adults aged 18 to 71 and exposed them to three different scenarios\nScenario 1: Rate Drug Efficacy (1 = very bad, 6 = very good)\nScenario 2: Likelihood to stop drinking cocoa (1 = surely stop, 6 = surely continue)\nScenario 3: Preference for chance choice (1 = surely safe option, 6 = surely risky)\nIn each scenario, participants were randomly assigned a positive or negative frame. They rated their response on a 1-6 scale. The researchers want to build three models, one for each scenario adjusting for simultaneous linear changes in demographic variables (gender, ethnicity, education level, political affiliation).\nThey want to evaluate whether, as adults age, the way choices are worded have more influence on their judgments and ultimate choices. If there is a change, are those changes driven by positive or negative framings? At what age does this effect onset?\nYour Goals:\nThe data are in HW4Data.csv but they will require some manual and tidyverse cleaning.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 4: Regression Consult"
+    ]
+  },
+  {
+    "objectID": "Math354/HW4/HW4.html#positive-vs.-negative-framing",
+    "href": "Math354/HW4/HW4.html#positive-vs.-negative-framing",
+    "title": "Homework 4 – Regression Consult",
+    "section": "2.1 Positive vs. Negative Framing",
+    "text": "2.1 Positive vs. Negative Framing\n\n\n\nCode\np1 = (ggplot(data = dat.good) +\n  geom_density(aes(x = pos1), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$pos1, na.rm = TRUE), color = \"green\") +\n  theme_minimal()) /\nggplot(data = dat.good) +\n  geom_density(aes(x = neg1), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$neg1, na.rm = TRUE), color = \"green\") +\n  theme_minimal() \np2 = (ggplot(data = dat.good) +\n  geom_density(aes(x = pos2), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$pos2, na.rm = TRUE), color = \"green\") +\n  theme_minimal()) /\nggplot(data = dat.good) +\n  geom_density(aes(x = neg2), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(aes(color = \"mean\",xintercept = mean(dat.good$neg2, na.rm = TRUE))) +\n  scale_color_manual(values = c(\"mean\" = \"green\")) +\n  theme_minimal() +\n  theme(legend.position = \"bottom\", legend.title = element_blank())\np3 = (ggplot(data = dat.good) +\n  geom_density(aes(x = pos3), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$pos3, na.rm = TRUE), color = \"green\") +\n  theme_minimal()) /\nggplot(data = dat.good) +\n  geom_density(aes(x = neg3), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$neg3, na.rm = TRUE), color = \"green\") +\n  theme_minimal()\n\np1 | p2 | p3\n\n\n\n\n\n\n\n\n\n\nThe graph above displays the distributions of responses given treatment (positive framing or negative framing) and their respective means for each question asked by the researchers. The means across treatments are different for each question across treatments and the distributions are also different. Assuming the sample is representative a statistical test and post-hoc analysis may reveal that the framing of a question effects the way people respond.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 4: Regression Consult"
+    ]
+  },
+  {
+    "objectID": "Math354/HW4/HW4.html#framing-by-age",
+    "href": "Math354/HW4/HW4.html#framing-by-age",
+    "title": "Homework 4 – Regression Consult",
+    "section": "2.2 Framing by Age",
+    "text": "2.2 Framing by Age\n\n\n\nCode\n(ggplot(data = dat.good) +\n  geom_smooth(aes(x = age, y = pos1), color = \"green\") +\n  geom_smooth(aes(x = age, y = neg1), color = \"red\") +\n  labs(x = \"Age\", y = \"Rating\", title = \"Question 1\") +\n  scale_y_continuous(limits = c(2, 4.5)) +\n  theme_minimal()) |\n(ggplot(data = dat.good) +\n  geom_smooth(aes(x = age, y = pos2, color = \"Positive Framing\")) +\n  geom_smooth(aes(x = age, y = neg2, color = \"Negative Framing\")) +\n  labs(x = \"Age\", y = \"Rating\", title = \"Question 2\") +\n  scale_y_continuous(limits = c(2, 4.5)) +\n  scale_color_manual(values = c(\"Positive Framing\" = \"green\", \"Negative Framing\" = \"red\")) +\n  theme_minimal() +\n  theme(legend.position = \"bottom\", legend.title = element_blank())) |\n(ggplot(data = dat.good) +\n  geom_smooth(aes(x = age, y = pos3), color = \"green\") +\n  geom_smooth(aes(x = age, y = neg3), color = \"red\") +\n  labs(x = \"Age\", y = \"Rating\", title = \"Question 3\") +\n  scale_y_continuous(limits = c(2, 4.5)) +\n  theme_minimal())\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\ndiff = tibble(age = unique(dat.good$age), q1 = rep(0, length(unique(dat.good$age))), q2 = rep(0, length(unique(dat.good$age))), q3 = rep(0, length(unique(dat.good$age))))\n\nfor(age in unique(dat.good$age)){\n  diff$q1[diff$age == age] = mean(dat.good$pos1[dat.good$age == age], na.rm = TRUE) - mean(dat.good$neg1[dat.good$age == age], na.rm = TRUE)\n  diff$q2[diff$age == age] = mean(dat.good$pos2[dat.good$age == age], na.rm = TRUE) - mean(dat.good$neg2[dat.good$age == age], na.rm = TRUE)\n  diff$q3[diff$age == age] = mean(dat.good$pos3[dat.good$age == age], na.rm = TRUE) - mean(dat.good$neg3[dat.good$age == age], na.rm = TRUE)\n}\n\nggplot(data = diff) +\n  geom_hline(yintercept = 0) +\n  geom_smooth(aes(x = age, y = q1), color = \"blue\", span = 0.5)+\n  geom_hline(aes(yintercept = mean(dat.good$pos1, na.rm = TRUE) - mean(dat.good$neg1, na.rm = TRUE)), color = \"green\") +\n  scale_y_continuous(limits = c(-2, 2)) +\n  labs(x = \"Age\", y = \"Difference\") +\n  theme_minimal() +\nggplot(data = diff) +\n  geom_hline(yintercept = 0) +\n  geom_smooth(aes(x = age, y = q2, color = \"Difference by Age\"), span = 0.5)+\n  geom_hline(aes(yintercept = mean(dat.good$pos2, na.rm = TRUE) - mean(dat.good$neg2, na.rm = TRUE), color = \"Average Difference\")) +  \n  scale_y_continuous(limits = c(-2, 2)) +\n  scale_color_manual(values = c(\"Average Difference\" = \"green\", \"Difference by Age\" = \"blue\")) +\n  labs(x = \"Age\", y = \"Difference\") +\n  theme_minimal() +\n  theme(legend.position = \"bottom\", legend.title = element_blank()) +\nggplot(data = diff) +\n  geom_hline(yintercept = 0) +\n  geom_smooth(aes(x = age, y = q3), color = \"blue\", span = 0.5)+\n  geom_hline(aes(yintercept = mean(dat.good$pos3, na.rm = TRUE) - mean(dat.good$neg3, na.rm = TRUE)), color = \"green\") +  \n  scale_y_continuous(limits = c(-2, 2)) +\n  labs(x = \"Age\", y = \"Difference\") +\n  theme_minimal() \n\n\n\n\n\n\n\n\n\n\nThe graphs above display the relationship between age, framing, and response. For question 1 the difference between the average response for positive framing and the average response for negative framing increases with age, signaling there may be an interaction between framing and age for drug efficacy. The same relationship is displayed for question 2 although with higher standard errors, signaling there may be the same interaction just weaker for the likelihood to stop drinking cocoa. For question 3 the interaction between age and framing is less clear, signaling there may or may not be an interaction at all for preference on chance choice.\n\n\n\nCode\nggpairs(dat.good, columns = c(9, 17), aes(color = treatment1, alpha = 0.5))\n\n\n\n\n\n\n\n\n\nCode\nggpairs(dat.good, columns = c(9, 18), aes(color = treatment2, alpha = 0.5))\n\n\n\n\n\n\n\n\n\nCode\nggpairs(dat.good, columns = c(9, 19), aes(color = treatment3, alpha = 0.5))",
     "crumbs": [
       "Data Analysis I",
       "HW 4: Regression Consult"
@@ -454,6 +597,17 @@
     ]
   },
   {
+    "objectID": "Math354/HW4/HW4.html#discussion-1",
+    "href": "Math354/HW4/HW4.html#discussion-1",
+    "title": "Homework 4 – Regression Consult",
+    "section": "4.1 Discussion",
+    "text": "4.1 Discussion\nThe results from the three scenarios showed that there may be an interaction between age and the framing of a question, however, only Scenario 1 showed a statistically significant interaction between age and treatment, suggesting that age may moderate the effect of framing in certain contexts but not consistently across all three scenarios.\nIn Scenario 1, perceptions of drug efficacy, the interaction between age and framing was statistically significant (\\(p=0.0475\\)). With negative framing, older respondents tended to rate the drug less favorably, while under positive framing, older respondents tended to rate it more favorably. This suggests that positive framing may become more influential in perceptions of drug efficacy as age increases. However, the interaction had a small effect size (\\(\\omega_p^2\\approx0.0051\\)), indicating that the relationship was relatively weak.\nIn Scenario 2, which examined willingness to continue drinking hot cocoa despite potential health risks, both framing conditions showed a negative relationship between age and the likelihood of continuing consumption. This relationship was stronger under negative framing, suggesting that older respondents may be more inclined to stop drinking hot cocoa when presented with information emphasizing increased cancer risk. However, the interaction was not statistically significant (\\(p=0.2911\\)), providing insufficient evidence that framing changes the relationship between age and willingness to continue drinking hot cocoa.\nIn Scenario 3, which examined preferences between safe and risky choices, age had a statistically significant positive relationship with preference for the risky option under negative framing (\\(p=0.0410\\)). Under positive framing, the estimated relationship between age and risk preference was slightly negative. This pattern suggests that older respondents may become more willing to choose the risky option when outcomes are framed in terms of lives lost rather than lives saved. However, the interaction was not statistically significant (\\(p=0.1168\\)), meaning there is insufficient evidence that the relationship between age and risk preference differs across framing conditions.",
+    "crumbs": [
+      "Data Analysis I",
+      "HW 4: Regression Consult"
+    ]
+  },
+  {
     "objectID": "Math354/HW1/Hw1.html",
     "href": "Math354/HW1/Hw1.html",
     "title": "Can Dogs Learn Words by Overhearing",
@@ -484,39 +638,6 @@
     "crumbs": [
       "Data Analysis I",
       "HW 1: Can Dogs Learn Words by Overhearing"
-    ]
-  },
-  {
-    "objectID": "Math354/HW4/HW4.html#positive-vs.-negative-framing",
-    "href": "Math354/HW4/HW4.html#positive-vs.-negative-framing",
-    "title": "Homework 4 – Regression Consult",
-    "section": "2.1 Positive vs. Negative Framing",
-    "text": "2.1 Positive vs. Negative Framing\n\n\n\nCode\np1 = (ggplot(data = dat.good) +\n  geom_density(aes(x = pos1), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$pos1, na.rm = TRUE), color = \"green\") +\n  theme_minimal()) /\nggplot(data = dat.good) +\n  geom_density(aes(x = neg1), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$neg1, na.rm = TRUE), color = \"green\") +\n  theme_minimal() \np2 = (ggplot(data = dat.good) +\n  geom_density(aes(x = pos2), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$pos2, na.rm = TRUE), color = \"green\") +\n  theme_minimal()) /\nggplot(data = dat.good) +\n  geom_density(aes(x = neg2), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(aes(color = \"mean\",xintercept = mean(dat.good$neg2, na.rm = TRUE))) +\n  scale_color_manual(values = c(\"mean\" = \"green\")) +\n  theme_minimal() +\n  theme(legend.position = \"bottom\", legend.title = element_blank())\np3 = (ggplot(data = dat.good) +\n  geom_density(aes(x = pos3), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$pos3, na.rm = TRUE), color = \"green\") +\n  theme_minimal()) /\nggplot(data = dat.good) +\n  geom_density(aes(x = neg3), binwidth = 1) +\n  geom_hline(yintercept = 0) +\n  geom_vline(xintercept = mean(dat.good$neg3, na.rm = TRUE), color = \"green\") +\n  theme_minimal()\n\np1 | p2 | p3\n\n\n\n\n\n\n\n\n\n\nThe graph above displays the distributions of responses given treatment (positive framing or negative framing) and their respective means for each question asked by the researchers. The means across treatments are different for each question across treatments and the distributions are also different. Assuming the sample is representative a statistical test and post-hoc analysis may reveal that the framing of a question effects the way people respond.",
-    "crumbs": [
-      "Data Analysis I",
-      "HW 4: Regression Consult"
-    ]
-  },
-  {
-    "objectID": "Math354/HW4/HW4.html#framing-by-age",
-    "href": "Math354/HW4/HW4.html#framing-by-age",
-    "title": "Homework 4 – Regression Consult",
-    "section": "2.2 Framing by Age",
-    "text": "2.2 Framing by Age\n\n\n\nCode\n(ggplot(data = dat.good) +\n  geom_smooth(aes(x = age, y = pos1), color = \"green\") +\n  geom_smooth(aes(x = age, y = neg1), color = \"red\") +\n  labs(x = \"Age\", y = \"Rating\", title = \"Question 1\") +\n  scale_y_continuous(limits = c(2, 4.5)) +\n  theme_minimal()) |\n(ggplot(data = dat.good) +\n  geom_smooth(aes(x = age, y = pos2, color = \"Positive Framing\")) +\n  geom_smooth(aes(x = age, y = neg2, color = \"Negative Framing\")) +\n  labs(x = \"Age\", y = \"Rating\", title = \"Question 2\") +\n  scale_y_continuous(limits = c(2, 4.5)) +\n  scale_color_manual(values = c(\"Positive Framing\" = \"green\", \"Negative Framing\" = \"red\")) +\n  theme_minimal() +\n  theme(legend.position = \"bottom\", legend.title = element_blank())) |\n(ggplot(data = dat.good) +\n  geom_smooth(aes(x = age, y = pos3), color = \"green\") +\n  geom_smooth(aes(x = age, y = neg3), color = \"red\") +\n  labs(x = \"Age\", y = \"Rating\", title = \"Question 3\") +\n  scale_y_continuous(limits = c(2, 4.5)) +\n  theme_minimal())\n\n\n\n\n\n\n\n\n\n\n\n\n\nCode\ndiff = tibble(age = unique(dat.good$age), q1 = rep(0, length(unique(dat.good$age))), q2 = rep(0, length(unique(dat.good$age))), q3 = rep(0, length(unique(dat.good$age))))\n\nfor(age in unique(dat.good$age)){\n  diff$q1[diff$age == age] = mean(dat.good$pos1[dat.good$age == age], na.rm = TRUE) - mean(dat.good$neg1[dat.good$age == age], na.rm = TRUE)\n  diff$q2[diff$age == age] = mean(dat.good$pos2[dat.good$age == age], na.rm = TRUE) - mean(dat.good$neg2[dat.good$age == age], na.rm = TRUE)\n  diff$q3[diff$age == age] = mean(dat.good$pos3[dat.good$age == age], na.rm = TRUE) - mean(dat.good$neg3[dat.good$age == age], na.rm = TRUE)\n}\n\nggplot(data = diff) +\n  geom_hline(yintercept = 0) +\n  geom_smooth(aes(x = age, y = q1), color = \"blue\", span = 0.5)+\n  geom_hline(aes(yintercept = mean(dat.good$pos1, na.rm = TRUE) - mean(dat.good$neg1, na.rm = TRUE)), color = \"green\") +\n  scale_y_continuous(limits = c(-2, 2)) +\n  labs(x = \"Age\", y = \"Difference\") +\n  theme_minimal() +\nggplot(data = diff) +\n  geom_hline(yintercept = 0) +\n  geom_smooth(aes(x = age, y = q2, color = \"Difference by Age\"), span = 0.5)+\n  geom_hline(aes(yintercept = mean(dat.good$pos2, na.rm = TRUE) - mean(dat.good$neg2, na.rm = TRUE), color = \"Average Difference\")) +  \n  scale_y_continuous(limits = c(-2, 2)) +\n  scale_color_manual(values = c(\"Average Difference\" = \"green\", \"Difference by Age\" = \"blue\")) +\n  labs(x = \"Age\", y = \"Difference\") +\n  theme_minimal() +\n  theme(legend.position = \"bottom\", legend.title = element_blank()) +\nggplot(data = diff) +\n  geom_hline(yintercept = 0) +\n  geom_smooth(aes(x = age, y = q3), color = \"blue\", span = 0.5)+\n  geom_hline(aes(yintercept = mean(dat.good$pos3, na.rm = TRUE) - mean(dat.good$neg3, na.rm = TRUE)), color = \"green\") +  \n  scale_y_continuous(limits = c(-2, 2)) +\n  labs(x = \"Age\", y = \"Difference\") +\n  theme_minimal() \n\n\n\n\n\n\n\n\n\n\nThe graphs above display the relationship between age, framing, and response. For question 1 the difference between the average response for positive framing and the average response for negative framing increases with age, signaling there may be an interaction between framing and age for drug efficacy. The same relationship is displayed for question 2 although with higher standard errors, signaling there may be the same interaction just weaker for the likelihood to stop drinking cocoa. For question 3 the interaction between age and framing is less clear, signaling there may or may not be an interaction at all for preference on chance choice.\n\n\n\nCode\nggpairs(dat.good, columns = c(9, 17), aes(color = treatment1, alpha = 0.5))\n\n\n\n\n\n\n\n\n\nCode\nggpairs(dat.good, columns = c(9, 18), aes(color = treatment2, alpha = 0.5))\n\n\n\n\n\n\n\n\n\nCode\nggpairs(dat.good, columns = c(9, 19), aes(color = treatment3, alpha = 0.5))",
-    "crumbs": [
-      "Data Analysis I",
-      "HW 4: Regression Consult"
-    ]
-  },
-  {
-    "objectID": "Math354/HW4/HW4.html#discussion-1",
-    "href": "Math354/HW4/HW4.html#discussion-1",
-    "title": "Homework 4 – Regression Consult",
-    "section": "4.1 Discussion",
-    "text": "4.1 Discussion\nThe results from the three scenarios showed that there may be an interaction between age and the framing of a question, however, only Scenario 1 showed a statistically significant interaction between age and treatment, suggesting that age may moderate the effect of framing in certain contexts but not consistently across all three scenarios.\nIn Scenario 1, perceptions of drug efficacy, the interaction between age and framing was statistically significant (\\(p=0.0475\\)). With negative framing, older respondents tended to rate the drug less favorably, while under positive framing, older respondents tended to rate it more favorably. This suggests that positive framing may become more influential in perceptions of drug efficacy as age increases. However, the interaction had a small effect size (\\(\\omega_p^2\\approx0.0051\\)), indicating that the relationship was relatively weak.\nIn Scenario 2, which examined willingness to continue drinking hot cocoa despite potential health risks, both framing conditions showed a negative relationship between age and the likelihood of continuing consumption. This relationship was stronger under negative framing, suggesting that older respondents may be more inclined to stop drinking hot cocoa when presented with information emphasizing increased cancer risk. However, the interaction was not statistically significant (\\(p=0.2911\\)), providing insufficient evidence that framing changes the relationship between age and willingness to continue drinking hot cocoa.\nIn Scenario 3, which examined preferences between safe and risky choices, age had a statistically significant positive relationship with preference for the risky option under negative framing (\\(p=0.0410\\)). Under positive framing, the estimated relationship between age and risk preference was slightly negative. This pattern suggests that older respondents may become more willing to choose the risky option when outcomes are framed in terms of lives lost rather than lives saved. However, the interaction was not statistically significant (\\(p=0.1168\\)), meaning there is insufficient evidence that the relationship between age and risk preference differs across framing conditions.",
-    "crumbs": [
-      "Data Analysis I",
-      "HW 4: Regression Consult"
     ]
   }
 ]

@@ -48,6 +48,8 @@ website:
             href: Math354/HW3/HW3.qmd
           - text: "HW 4: Regression Consult"
             href: Math354/HW4/HW4.qmd
+          - text: "HW 5: Regression 2"
+            href: Math354/HW5/HW5.qmd
 
 
   page-footer: 
